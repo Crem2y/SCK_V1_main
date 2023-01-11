@@ -31,21 +31,26 @@ bool I2C_is_communicating = false;        // I2C is communicating
  * 
  */
 ISR(TWI_vect) {
-  if(!I2C_is_communicating) { //if not communicating, it's error
-    //twint 클리어
+  if(!I2C_is_communicating) { // if not communicating, it's error
+    TWCR |= 0x80; //clear TWINT
     return;
   }
-  //switch(reg)
+  
+  switch(TWSR & 0xF8) {
+    case 0x00:
+      
+    break;
+  }
 
+  TWCR |= 0x80; // clear TWINT
 
-  //twint 클리어
-
-  //if ended
-  I2C_is_communicating = false;
+  if(I2C_remain_bytes == 0) {
+    I2C_is_communicating = false;
+  }
 }
 
 /**
- * @brief initalize I2C port
+ * @brief initalize I2C port, call sei() to use I2C.
  * 
  * @return true
  * @return false 

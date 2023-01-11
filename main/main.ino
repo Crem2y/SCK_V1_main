@@ -7,6 +7,7 @@
 #include "customcode.h"
 #include "keydatas.h"
 #include "constants.h"
+#include "customi2c.h"
 
 #define TIM_DISABLE TIMSK0&=(0<<OCIE0A)
 #define TIM_ENABLE TIMSK0|=(1<<OCIE0A)
@@ -29,7 +30,7 @@ byte kset = 0; // keyset number
 unsigned int timeCount = 0; // timer count
 
 /**
- * @brief Construct a new ISR object
+ * @brief AVR Interrupt Service Routine (TIMER0_COMPA)
  * timer int (1kHz = 1ms)
  */
 ISR(TIMER0_COMPA_vect) {
