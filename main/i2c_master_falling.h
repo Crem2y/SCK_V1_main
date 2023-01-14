@@ -2,8 +2,15 @@
 
 #include "i2c_master_interrupt.h"
 
+bool I2C_init_falling(void);
+bool I2C_check_falling(unsigned char address);
+bool I2C_read_byte_falling(unsigned char address);
+bool I2C_read_data_falling(unsigned char address, unsigned char length);
+bool I2C_write_byte_falling(unsigned char address);
+bool I2C_write_data_falling(unsigned char address, unsigned char length);
+
 /**
- * @brief initalize I2C port to master, call sei() to use I2C.
+ * @brief initalize I2C port to master.
  *        clock : 400kHz
  * @return true
  * @return false 
