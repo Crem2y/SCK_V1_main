@@ -7,7 +7,7 @@
 //#include "customcode.h"
 //#include "keydatas.h"
 //#include "constants.h"
-#include "customi2c.h"
+#include "i2c_master_falling.h"
 
 #define TIM_DISABLE TIMSK0&=(0<<OCIE0A)
 #define TIM_ENABLE TIMSK0|=(1<<OCIE0A)
