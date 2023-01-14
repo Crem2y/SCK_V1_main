@@ -40,69 +40,14 @@ bool I2C_init_falling(void) {
  * @return false 
  */
 bool I2C_check_falling(unsigned char address) {
-  if (!I2C_is_initalized || I2C_is_communicating) return false;
-  I2C_is_communicating = true;
-  
-  unsigned char count;
-  unsigned char err_code = 0x00;
+  I2C_reading_data[0] = 0xff;
+  if(!I2C_read_byte_falling(address)) return false;
 
-  TWCR = 0xA4; // START condition
-  count = 0;
-  while(((TWCR & 0x80) == 0x00) || ((TWSR & 0xF8) != 0x08)) // START complete ?
-    { if(count >= 10) {
-      err_code = 0x11; // wait ACK with 100us time limit
-      break;
-      }
-      count++;
-      delayMicroseconds(10);
-    }
+  Serial.println("[I2C] read data is... 0x");
+  Serial.println(I2C_reading_data[0], HEX);
 
-  TWDR = (address << 1) | 1; // SLA+R
-  TWCR = 0x84;
-  count = 0;
-  while(((TWCR & 0x80) == 0x00) || ((TWSR & 0xF8) != 0x40)) // SLA+R complete ?
-    { if(count >= 10) {
-      err_code = 0x12; // wait ACK with 100us time limit
-      break;
-      }
-      count++;
-      delayMicroseconds(10);
-    }
-
-  
-  TWCR = 0x84; // read data with no acknowledge
-  count = 0;
-  while(((TWCR & 0x80) == 0x00) || ((TWSR & 0xF8) != 0x58)) // data complete ?
-    { if(count >= 10) {
-      err_code = 0x13; // wait ACK with 100us time limit
-      break;
-      }
-      count++;
-      delayMicroseconds(10);
-    }
-  I2C_reading_data[0] = TWDR; // read data
-
-  TWCR = 0x94; // STOP condition
-
-  delay(5); // delay 5 ms for twr time
-
-  I2C_is_communicating = false;
-  
-  switch (err_code) {
-    case 0x00:
-      return true;
-    break;
-    case 0x11:
-      Serial.println("[ERR] Write error at START condition.");
-    break;
-    case 0x12:
-      Serial.println("[ERR] Write error at SLA+R.");
-    break;
-    case 0x13:
-      Serial.println("[ERR] Read error at read data.");
-    break;
-  }
-  return false;
+  if(I2C_reading_data[0] == 0xff) return false;
+  return true;
 }
 
 /**
@@ -115,6 +60,7 @@ bool I2C_check_falling(unsigned char address) {
 bool I2C_read_byte_falling(unsigned char address) {
   if (!I2C_is_initalized || I2C_is_communicating) return false;
   I2C_is_communicating = true;
+  I2C_reading_data[0] = 0xff;
   
   unsigned char count;
   unsigned char err_code = 0x00;
@@ -163,6 +109,7 @@ bool I2C_read_byte_falling(unsigned char address) {
   
   switch (err_code) {
     case 0x00:
+      Serial.println("[I2C] I2C_read_byte_falling OK");
       return true;
     break;
     case 0x11:
@@ -253,6 +200,7 @@ bool I2C_write_byte_falling(unsigned char address) {
   
   switch (err_code) {
     case 0x00:
+      Serial.println("[I2C] I2C_write_byte_falling OK");
     break;
     case 0x11:
       Serial.println("[ERR] Write error at START condition.");

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <stdbool.h>
-#include <avr/interrupt.h>
-#include <avr/iom32u4.h> // if using other MCU, change this header.
 #include "i2c_status_code.h"
 
 #define I2C_READING_BYTES_MAX 32          // I2C max reading bytes (1 ~ 255)
