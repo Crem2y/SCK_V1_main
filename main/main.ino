@@ -21,8 +21,6 @@ void setup(void) {
 
   pinMode(LED_BUILTIN, OUTPUT);
 
-  // other funtion set
-  //BootKeyboard.begin();
   Serial.begin(115200);
   while (!Serial);
   
@@ -30,19 +28,6 @@ void setup(void) {
   Serial.println("[sys] waiting 5 seconds...");
   delay(5000);
   Serial.println("[sys] done!");
-
-  /*
-  // timer set (1kHz = 1ms)
-  TCCR0A = 0; //TCCR0A initialize
-  TCCR0B = 0; //TCCR0B initialize
-  TCNT0 = 0;  //TCNT0 initialize
-  OCR0A= 250; 
-  TCCR0B |= (1<<WGM02);
-  TCCR0B |= (1<<CS01) | (1<<CS00);
-  TIMSK0 |= (1<<OCIE0A);
-  //TIM_DISABLE;
-  // timer set end
-  */
 
   // I2C set
   if(!I2C_init()) {
