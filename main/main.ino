@@ -1,5 +1,5 @@
 // for arduino Leonardo board
-#include <EEPROM.h> // ATmega32U4 has 1024 bytes
+//#include <EEPROM.h> // ATmega32U4 has 1024 bytes
 //#include <HID-Project.h>
 //#include <Adafruit_NeoPixel.h>
 //#include <avr/power.h>
@@ -30,7 +30,7 @@ void setup(void) {
   Serial.println("[sys] done!");
 
   // I2C set
-  if(!I2C_init()) {
+  if(!I2C_init_falling()) {
     Serial.println("[I2C] init error!");
     while(1);
   }
@@ -42,7 +42,7 @@ void setup(void) {
     Serial.print("[I2C] slave 0x");
     Serial.print(i, HEX);
     Serial.print(" checking...");
-    if(I2C_check(i)) {
+    if(I2C_check_falling(i)) {
       Serial.println(" ACK!");
     } else {
       Serial.println(" ERROR!");
@@ -66,7 +66,7 @@ void loop(void) {
   I2C_write_byte_falling(0x20);
 
   I2C_reading_data[0] = 0xff;
-  if(!I2C_read_byte(0x20)) {
+  if(!I2C_read_byte_falling(0x20)) {
     Serial.println("[I2C] error!");
   }
   while(I2C_is_communicating);

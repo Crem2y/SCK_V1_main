@@ -37,6 +37,7 @@
 #define I2C_SC_ST_ARA  0xB0 // Arbitration lost in SLA+R/W as Master, own SLA+R has been received, ACK has been returned
 #define I2C_SC_ST_DBA  0xB8 // Data byte in TWDR has been transmitted, ACK has been received
 #define I2C_SC_ST_DBN  0xC8 // Data byte in TWDR has been transmitted, NOT ACK has been received
+
 // error code
 #define I2C_SC_ER_NA   0xF8 // No relevant state information available, TWINT = “0”
 #define I2C_SC_ER_ERR  0x00 // Bus error due to an illegal START or STOP condition
