@@ -1,5 +1,5 @@
 arduino/
 .vscode/
-*.code-workspace
 *.backup
 *.bak
+*.code-workspace
