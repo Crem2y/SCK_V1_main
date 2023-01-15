@@ -24,7 +24,7 @@ bool I2C_read_byte(unsigned char address);
  * 
  */
 ISR(TWI_vect) {
-  Serial.println(I2C_SC, HEX);
+  //Serial.println(I2C_SC, HEX);
   if(!I2C_is_communicating) {
     TWCR = 0x85; // clear TWINT
     return;
@@ -173,7 +173,7 @@ bool I2C_data_clear(void) {
 bool I2C_check(unsigned char address) {
   I2C_reading_data[0] = 0xFF;
   if(!I2C_read_byte(address)) return false;
-  Serial.println(" checking...");
+  //Serial.println(" checking...");
   while(I2C_is_communicating);
 
   if(I2C_err_count == 0) return true;
