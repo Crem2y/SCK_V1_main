@@ -10,6 +10,8 @@
 #include "i2c_master_interrupt.h"
 #include "macro_timer.h"
 
+//Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIXELPIN, NEO_GRB + NEO_KHZ800);
+
 byte lock_key;
 String uartString = "";
 
