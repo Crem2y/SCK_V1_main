@@ -24,80 +24,90 @@ bool I2C_read_byte(unsigned char address);
  * 
  */
 ISR(TWI_vect) {
+  Serial.println(I2C_SC, HEX);
+  if(!I2C_is_communicating) {
+    TWCR = 0x85; // clear TWINT
+    return;
+  }
 
   switch(I2C_SC) {
     case I2C_SC_MT_SC:
       TWDR = (I2C_target_address << 1) | I2C_mode;
-      TWCR = 0x84; // clear TWINT, clear TWSTA
+      TWCR = 0x85; // clear TWINT, clear TWSTA
     break;
     case I2C_SC_MT_RSC:
-      TWCR = 0x84; // clear TWINT
+      TWCR = 0x85; // clear TWINT
+      I2C_is_communicating = false;
       // repeated start unused
     break;
     case I2C_SC_MT_SWA:
-      I2C_bytes_addr = 0;
       TWDR = I2C_writing_data[I2C_bytes_addr];
-      TWCR = 0x84; // clear TWINT
+      TWCR = 0x85; // clear TWINT
     break;
     case I2C_SC_MT_SWN:
-      TWCR = 0x94; // clear TWINT, STOP Condition
       I2C_err_count++;
       I2C_is_communicating = false;
+      TWCR = 0x95; // clear TWINT, STOP Condition
     break;
     case I2C_SC_MT_DBA:
       I2C_bytes_addr++;
       if(I2C_bytes_addr == I2C_bytes_size) { // if it was last byte
-        TWCR = 0x94; // clear TWINT, STOP Condition
         I2C_is_communicating = false;
+        TWCR = 0x95; // clear TWINT, STOP Condition
       } else {
         TWDR = I2C_writing_data[I2C_bytes_addr];
-        TWCR = 0x84; // clear TWINT
+        TWCR = 0x85; // clear TWINT
       }
     break;
     case I2C_SC_MT_DBN:
-      TWCR = 0x94; // clear TWINT, STOP Condition
       I2C_is_communicating = false;
+      TWCR = 0x95; // clear TWINT, STOP Condition
     break;
     case I2C_SC_MT_AL:
-      TWCR = 0x84; // clear TWINT
+      TWCR = 0x85; // clear TWINT
+      I2C_is_communicating = false;
       // Arbitration unused
     break;
     case I2C_SC_MR_SRA:
-      I2C_bytes_addr = 0;
       if(I2C_bytes_size == 1) { // if next is last byte
-        TWCR = 0x84; // clear TWINT, NOT ACK
+        TWCR = 0x85; // clear TWINT, NOT ACK
       } else {
-        TWCR = 0xC4; // clear TWINT, ACK
+        TWCR = 0xC5; // clear TWINT, ACK
       }
     break;
     case I2C_SC_MR_SRN:
-      TWCR = 0x94; // clear TWINT, STOP Condition
       I2C_err_count++;
       I2C_is_communicating = false;
+      TWCR = 0x95; // clear TWINT, STOP Condition
     break;
     case I2C_SC_MR_DBA:
+      I2C_reading_data[I2C_bytes_addr] = TWDR;
       I2C_bytes_addr++;
-      I2C_reading_data[I2C_bytes_addr - 1] = TWDR;
       if(I2C_bytes_addr == I2C_bytes_size) { // if it was last byte
-        TWCR |= 0x10; // STOP Condition
+        I2C_is_communicating = false;
+        TWCR = 0x95; // clear TWINT, STOP Condition
       } else if (I2C_bytes_addr + 1 == I2C_bytes_size) { // if next is last byte
-        TWCR = 0x84; // clear TWINT, NOT ACK
+        TWCR = 0x85; // clear TWINT, NOT ACK
       } else {
-        TWCR = 0xC4; // clear TWINT, ACK
+        TWCR = 0xC5; // clear TWINT, ACK
       }
     break;
     case I2C_SC_MR_DBN:
-      I2C_reading_data[I2C_bytes_addr - 1] = TWDR;
-      TWCR = 0x94; // clear TWINT, STOP Condition
       I2C_is_communicating = false;
+      I2C_reading_data[I2C_bytes_addr] = TWDR;
+      TWCR = 0x95; // clear TWINT, STOP Condition
+      
     break;
     case I2C_SC_ER_ERR:
-      TWCR = 0x84; // clear TWINT
       I2C_err_count++;
+      I2C_is_communicating = false;
+      TWCR = 0x85; // clear TWINT
     break;
     case I2C_SC_ER_NA:
     break;
   }
+
+  TWCR |= 0x85; // clear TWINT
 }
 
 /**
@@ -163,10 +173,8 @@ bool I2C_data_clear(void) {
 bool I2C_check(unsigned char address) {
   I2C_reading_data[0] = 0xFF;
   if(!I2C_read_byte(address)) return false;
-
+  Serial.println(" checking...");
   while(I2C_is_communicating);
-
-  Serial.println(I2C_reading_data[0], HEX);
 
   if(I2C_err_count == 0) return true;
 
@@ -181,15 +189,23 @@ bool I2C_check(unsigned char address) {
  * @return false 
  */
 bool I2C_read_byte(unsigned char address) {
-  if (!I2C_is_initalized || I2C_is_communicating) return false;
+  if (!I2C_is_initalized) {
+    Serial.println("[I2C] I2C_read_byte : not initalized!");
+    return false;
+  }
+  if (I2C_is_communicating) {
+    Serial.println("[I2C] I2C_read_byte : still communicating!");
+    return false;
+  }
 
   I2C_target_address = address;
   I2C_mode = 1;
+  I2C_bytes_addr = 0;
   I2C_bytes_size = 1;
   I2C_err_count = 0;
   I2C_is_communicating = true;
 
-  TWCR = 0xA4; // clear TWINT & START Condition
+  TWCR = 0xA5; // clear TWINT & START Condition
 
   return true;
 }
@@ -208,11 +224,12 @@ bool I2C_read_data(unsigned char address, unsigned char length) {
 
   I2C_target_address = address;
   I2C_mode = 1;
+  I2C_bytes_addr = 0;
   I2C_bytes_size = length;
   I2C_err_count = 0;
   I2C_is_communicating = true;
 
-  TWCR = 0xA4; // clear TWINT & START Condition
+  TWCR = 0xA5; // clear TWINT & START Condition
 
   return true;
 }
@@ -229,11 +246,12 @@ bool I2C_write_byte(unsigned char address) {
 
   I2C_target_address = address;
   I2C_mode = 0;
+  I2C_bytes_addr = 0;
   I2C_bytes_size = 1;
   I2C_err_count = 0;
   I2C_is_communicating = true;
   
-  TWCR = 0xA4; // clear TWINT & START Condition
+  TWCR = 0xA5; // clear TWINT & START Condition
 
   return true;
 }
@@ -252,11 +270,12 @@ bool I2C_write_data(unsigned char address, unsigned char length) {
 
   I2C_target_address = address;
   I2C_mode = 0;
+  I2C_bytes_addr = 0;
   I2C_bytes_size = length;
   I2C_err_count = 0;
   I2C_is_communicating = true;
   
-  TWCR = 0xA4; // clear TWINT & START Condition
+  TWCR = 0xA5; // clear TWINT & START Condition
 
   return true;
 }
