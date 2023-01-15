@@ -58,6 +58,7 @@ void setup(void) {
   }
   digitalWrite(LED_BUILTIN, LOW);
   Serial.println("[I2C] all slaves checked!\n");
+  delay(1000);
   // I2C set end
   Serial.print("[sys] waiting 3 seconds");
   for(i=0; i<3; i++) {
