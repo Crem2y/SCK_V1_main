@@ -1,19 +1,18 @@
 // for arduino Leonardo board
-//#include <EEPROM.h> // ATmega32U4 has 1024 bytes
-//#include <HID-Project.h>
-//#include <Adafruit_NeoPixel.h>
-//#include <avr/power.h>
+#include <EEPROM.h> // ATmega32U4 has 1024 bytes
+#include <HID-Project.h>
+#include <Adafruit_NeoPixel.h>
+#include <avr/power.h>
 
-//#include "customcode.h"
-//#include "keydatas.h"
-//#include "constants.h"
+#include "custom_key_code.h"
+#include "key_datas.h"
+#include "constants.h"
 #include "i2c_master_interrupt.h"
 
 #define TIM_DISABLE TIMSK0&=(0<<OCIE0A)
 #define TIM_ENABLE TIMSK0|=(1<<OCIE0A)
 
-//byte lock_key;
-
+byte lock_key;
 String uartString = "";
 
 void setup(void) {
@@ -84,7 +83,7 @@ void loop(void) {
   Serial.print("[I2C] data = 0x");
   if(I2C_reading_data[0] < 0x10) Serial.print('0');
   Serial.println(I2C_reading_data[0], HEX);
-
-  delay(100);
+  
+  delay(1);
 }
 //////////////////////////////// main loop end ////////////////////////////////
