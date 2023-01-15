@@ -91,9 +91,11 @@ ISR(TWI_vect) {
       TWCR = 0x94; // clear TWINT, STOP Condition
       I2C_is_communicating = false;
     break;
-    default: // error!
+    case I2C_SC_ER_ERR:
       TWCR = 0x84; // clear TWINT
       I2C_err_count++;
+    break;
+    case I2C_SC_ER_NA:
     break;
   }
 }

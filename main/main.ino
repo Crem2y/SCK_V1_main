@@ -38,7 +38,7 @@ void setup(void) {
 
   sei();
 
-  for(i=0x20; i<0x30; i++) {
+  for(i=0x21; i<0x30; i++) {
     Serial.print("[I2C] slave 0x");
     Serial.print(i, HEX);
     Serial.print(" checking...");
@@ -63,10 +63,10 @@ void loop(void) {
     Serial.println(uartString);
   }
 
-  I2C_write_byte(0x20);
+  I2C_write_byte(0x21);
 
   I2C_reading_data[0] = 0xff;
-  if(!I2C_read_byte(0x20)) {
+  if(!I2C_read_byte(0x21)) {
     Serial.println("[I2C] error!");
   }
   while(I2C_is_communicating);
