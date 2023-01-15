@@ -1,3 +1,5 @@
+#pragma once
+
 #define KEY_LAYERS 2
 #define KM_V 6
 #define KM_H 14
@@ -54,14 +56,23 @@ byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
 
 // -- How to set the mode-code --
 // set bit 7~0, if key is {1,2,3,4}
-// bit 7 : key 1 toggle mode?
-// bit 6 : key 1 repeat mode?
-// bit 5 : key 2 toggle mode?
-// bit 4 : key 2 repeat mode?
-// bit 3 : key 3 toggle mode?
-// bit 2 : key 3 repeat mode?
-// bit 1 : key 4 toggle mode?
-// bit 0 : key 4 repeat mode? 
+// bit 7 : rsw ccw toggle mode? (not recommended)
+// bit 6 : rsw ccw repeat mode? (not recommended)
+// bit 5 : rsw cw  toggle mode? (not recommended)
+// bit 4 : rsw cw  repeat mode? (not recommended)
+// bit 3 : rsw sw toggle mode?
+// bit 2 : rsw sw repeat mode?
+// bit 1 : key 1 toggle mode?
+// bit 0 : key 1 repeat mode? 
+
+// bit 7 : key 2 toggle mode?
+// bit 6 : key 2 repeat mode?
+// bit 5 : key 3 toggle mode?
+// bit 4 : key 3 repeat mode?
+// bit 3 : key 4 toggle mode?
+// bit 2 : key 4 repeat mode?
+// bit 1 : key 5 toggle mode?
+// bit 0 : key 5 repeat mode? 
 
 byte SCK_MM_keyset[KEY_LAYERS][MM_V+2][MM_H] = { // for Macro Module (FN, V, MM_num)
   {{0x00,0x00,0x00,0x00,0x00}, // normal key layer

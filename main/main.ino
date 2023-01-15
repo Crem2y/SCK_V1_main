@@ -8,9 +8,7 @@
 #include "key_datas.h"
 #include "constants.h"
 #include "i2c_master_interrupt.h"
-
-#define TIM_DISABLE TIMSK0&=(0<<OCIE0A)
-#define TIM_ENABLE TIMSK0|=(1<<OCIE0A)
+#include "macro_timer.h"
 
 byte lock_key;
 String uartString = "";
@@ -33,6 +31,41 @@ unsigned char SCK_key_layer = 0;
 
 bool SCK_power_status = false;
 
+volatile unsigned int timeCount = 0; // timer count
+
+/**
+ * @brief AVR Interrupt Service Routine (TIMER0_COMPA)
+ * timer int (1kHz = 1ms)
+ */
+ISR(TIMER0_COMPA_vect) {
+  timeCount++;
+  if (timeCount < repeatSpeed) {
+    return;
+  }
+
+  byte i,j;
+  /*
+  for(i=0; i<KEYS_H; i++) { // key checking
+    for(j=0; j<KEYS_V; j++) {
+      if (keySets[kset][j][KEYS_H] & (0x40>>(i*2))) { // if repeat mode
+        if (keySets[kset][j][KEYS_H] & (0x80>>(i*2))) { // if toggle mode
+          if (isToggledKey[j][i]) { // if toggle flag on
+            keyHandle(keySets[kset][j][i], true); // click a key
+            keyHandle(keySets[kset][j][i], false);
+          }
+        } else if (isKeyPressed[j][i]) { // not toggle mode & key flag on
+          keyHandle(keySets[kset][j][i], true); // click a key
+          keyHandle(keySets[kset][j][i], false);
+        }
+      }
+    }
+  }
+  */
+  timeCount = 0;
+
+}
+
+
 void setup(void) {
   byte i;
 
@@ -42,6 +75,7 @@ void setup(void) {
   delay(3000);
   
   Serial.println("[sys] --SCK V1--");
+  Serial.println("[sys] firmware ver. 0.2.230115");
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -49,8 +83,8 @@ void setup(void) {
 
   //pixels.begin();
 
-  Serial.print("[sys] waiting 5 seconds");
-  for(i=0; i<5; i++) {
+  Serial.print("[sys] waiting 3 seconds");
+  for(i=0; i<3; i++) {
     Serial.print('.');
     delay(1000);
   }
@@ -108,17 +142,15 @@ void setup(void) {
 
   delay(1000);
   // I2C set end
-  Serial.print("[sys] waiting 3 seconds");
-  for(i=0; i<3; i++) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println("done!");
+  Serial.println("keyboard start!");
+  //timer0_init();
 }
 
 //////////////////////////////// main loop start ////////////////////////////////
 void loop(void) {
   byte i, j;
+  byte key_mask = 0x01;
+  byte key_state;
   digitalWrite(LED_BUILTIN, HIGH);
   
   while(Serial.available()) { //데이터가 오면
@@ -143,24 +175,62 @@ void loop(void) {
 
   }
   if(SCK_MM_count) { // if there is macro modules
-    for(i=0; i<SCK_MM_count; i++){
+    for(i=0; i<SCK_MM_count; i++) {
       I2C_read_byte(SCK_MM_addresses[i]);
       while(I2C_is_communicating);
-      keyCheck_MM(I2C_reading_data[0], i, SCK_key_layer);
+      //Serial.println(I2C_reading_data[0], HEX);
+
+      key_mask = 0x80;
+      for(j=0; j<4; j++) {
+        key_state = I2C_reading_data[0] & key_mask;
+        if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x40>>(j*2))) { // if repeat mode
+          if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+            //toggleRepeat(key_state, (j+4), i, SCK_key_layer);
+          } else {
+            //keyRepeat(key_state, (j+4), i, SCK_key_layer);
+          }
+        } else {
+          if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+            //keyToggle(key_state, (j+4), i, SCK_key_layer);
+          } else {
+            keyCheck_MM(key_state, j, i, SCK_key_layer);
+          }
+        }
+        key_mask >>= 1;
+      } // key_mask = 0x08
+      for(j=0; j<4; j++) {
+        key_state = I2C_reading_data[0] & key_mask;
+        if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
+          if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
+            //toggleRepeat(key_state, (j+4), i, SCK_key_layer);
+          } else {
+            //keyRepeat(key_state, (j+4), i, SCK_key_layer);
+          }
+        } else {
+          if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
+            //keyToggle(key_state, (j+4), i, SCK_key_layer);
+          } else {
+            keyCheck_MM(key_state, (j+4), i, SCK_key_layer);
+          }
+        }
+        key_mask >>= 1;
+      }
     }
   }
   // getting key end
 
   
-  delay(1);
+  
 
   lock_key = BootKeyboard.getLeds(); // lock key checking
 
+  delay(1);
 }
 //////////////////////////////// main loop end ////////////////////////////////
 
 
 /////////////// key function ///////////////
+
 /**
  * @brief chack and press a key once
  * 
@@ -169,19 +239,15 @@ void loop(void) {
  * @param keyposH byte, 0 ~ MM_H
  * @param keyset byte, 0 ~ KEY_LAYERS
  */
-void keyCheck_MM(byte keydata, byte module_num, byte key_layer) {
-  byte keymask = 0x01;
-  for(byte i=0; i<8; i++) {
-    if (keydata & keymask) { // if pressed
-      if (!SCK_MM_pressed[i][module_num]) { // if first detacted
-        keyHandle(SCK_MM_keyset[key_layer][(MM_V+1) - i][module_num], true); // press a key
-        SCK_MM_pressed[i][module_num] = true;
-      }
-    } else if (SCK_MM_pressed[i][module_num]) { // if key released
-      keyHandle(SCK_MM_keyset[key_layer][(MM_V+1) - i][module_num], false); // release a key
-      SCK_MM_pressed[i][module_num] = false;
+void keyCheck_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
+  if (key_state) { // if pressed
+    if (!SCK_MM_pressed[keyposV][module_num]) { // if first detacted
+      keyHandle(SCK_MM_keyset[key_layer][2 + keyposV][module_num], true); // press a key
+      SCK_MM_pressed[keyposV][module_num] = true;
     }
-    keymask = keymask << 1;
+  } else if (SCK_MM_pressed[keyposV][module_num]) { // if key released
+    keyHandle(SCK_MM_keyset[key_layer][2 + keyposV][module_num], false); // release a key
+    SCK_MM_pressed[keyposV][module_num] = false;
   }
 }
 
