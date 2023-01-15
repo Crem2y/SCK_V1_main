@@ -43,16 +43,18 @@ void setup(void) {
   Serial.println("[I2C] slave scanning...");
   digitalWrite(LED_BUILTIN, HIGH);
   for(i=0x20; i<0x70; i++) {
-    Serial.print("[I2C] 0x");
-    Serial.print(i, HEX);
+    //Serial.print("[I2C] 0x");
+    //Serial.print(i, HEX);
     if(I2C_check(i)) {
+      Serial.print("[I2C] 0x");
+      Serial.print(i, HEX);
       Serial.print(" ACK! data : 0x");
       if(I2C_reading_data[0] < 0x10) Serial.print('0');
       Serial.println(I2C_reading_data[0], HEX);
     } else {
-      Serial.println(" ERROR!");
+      //Serial.println(" ERROR!");
     }
-    delay(100);
+    delay(1);
   }
   digitalWrite(LED_BUILTIN, LOW);
   Serial.println("[I2C] all slaves checked!\n");
