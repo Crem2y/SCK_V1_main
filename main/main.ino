@@ -46,25 +46,41 @@ ISR(TIMER0_COMPA_vect) {
   }
 
   byte i,j;
-  /*
-  for(i=0; i<KEYS_H; i++) { // key checking
-    for(j=0; j<KEYS_V; j++) {
-      if (keySets[kset][j][KEYS_H] & (0x40>>(i*2))) { // if repeat mode
-        if (keySets[kset][j][KEYS_H] & (0x80>>(i*2))) { // if toggle mode
-          if (isToggledKey[j][i]) { // if toggle flag on
-            keyHandle(keySets[kset][j][i], true); // click a key
-            keyHandle(keySets[kset][j][i], false);
+  byte key_mask;
+
+  for(i=0; i<MM_H; i++) { // key checking
+    key_mask = 0x80;
+    for(j=0; j<4; j++) {
+      if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x40>>(j*2))) { // if repeat mode
+        if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+          if (SCK_MM_toggled[j][i]) { // if toggle flag on
+          keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
+          keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
           }
-        } else if (isKeyPressed[j][i]) { // not toggle mode & key flag on
-          keyHandle(keySets[kset][j][i], true); // click a key
-          keyHandle(keySets[kset][j][i], false);
+        } else if (SCK_MM_pressed[j][i]) {
+          keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
+          keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
         }
       }
+      key_mask >>= 1;
+    } // key_mask = 0x08
+    for(j=0; j<4; j++) {
+      if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
+        if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
+          if (SCK_MM_toggled[4+j][i]) { // if toggle flag on
+          keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], true); // click a key
+          keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], false);
+          }
+        } else if (SCK_MM_pressed[4+j][i]) {
+          keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], true); // click a key
+          keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], false);
+        }
+      }
+      key_mask >>= 1;
     }
   }
-  */
-  timeCount = 0;
 
+  timeCount = 0;
 }
 
 
@@ -142,10 +158,17 @@ void setup(void) {
     while(1);
   }
 
+  Serial.print("\n[sys] default mouseSpeed  : ");
+  Serial.println(mouseSpeed);
+  Serial.print("[sys] default wheelSpeed  : ");
+  Serial.println(wheelSpeed);
+  Serial.print("[sys] default repeatSpeed : ");
+  Serial.println(repeatSpeed);
+
   delay(1000);
   // I2C set end
   Serial.println("keyboard start!");
-  //timer0_init();
+  timer0_init();
 }
 
 //////////////////////////////// main loop start ////////////////////////////////
@@ -186,13 +209,13 @@ void loop(void) {
         key_state = I2C_reading_data[0] & key_mask;
         if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x40>>(j*2))) { // if repeat mode
           if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
-            //toggleRepeat(key_state, (j+4), i, SCK_key_layer);
+            toggleRepeat_MM(key_state, j, i, SCK_key_layer);
           } else {
-            //keyRepeat(key_state, (j+4), i, SCK_key_layer);
+            keyRepeat_MM(key_state, j, i, SCK_key_layer);
           }
         } else {
           if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
-            //keyToggle(key_state, (j+4), i, SCK_key_layer);
+            keyToggle_MM(key_state, j, i, SCK_key_layer);
           } else {
             keyCheck_MM(key_state, j, i, SCK_key_layer);
           }
@@ -203,13 +226,13 @@ void loop(void) {
         key_state = I2C_reading_data[0] & key_mask;
         if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
           if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            //toggleRepeat_MM(key_state, (j+4), i, SCK_key_layer);
+            toggleRepeat_MM(key_state, (j+4), i, SCK_key_layer);
           } else {
-            //keyRepeat_MM(key_state, (j+4), i, SCK_key_layer);
+            keyRepeat_MM(key_state, (j+4), i, SCK_key_layer);
           }
         } else {
           if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            //keyToggle_MM(key_state, (j+4), i, SCK_key_layer);
+            keyToggle_MM(key_state, (j+4), i, SCK_key_layer);
           } else {
             keyCheck_MM(key_state, (j+4), i, SCK_key_layer);
           }
@@ -280,7 +303,7 @@ void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
   if (key_state) { // if pressed
     if (!SCK_MM_pressed[keyposV][module_num]) { // if first detacted
       SCK_MM_toggled[keyposV][module_num] = !TK; // toggle state
-      keyHandle(SCK_MM_keyset[key_layer][keyposV][module_num], !TK); 
+      keyHandle(SCK_MM_keyset[key_layer][2 + keyposV][module_num], !TK); 
       SCK_MM_pressed[keyposV][module_num] = true;
     }
   } else { // if not pressed
