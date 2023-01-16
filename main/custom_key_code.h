@@ -1,3 +1,4 @@
+#pragma once
 // This uses the empty space in <keyboard.h>.
 // unused 0x00 (1)
 #define K___ 0x00 // key_none (there is no key)

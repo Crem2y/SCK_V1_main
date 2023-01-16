@@ -19,10 +19,10 @@ signed   char mouseSpeed = MS_DEF; // mouse move speed  (-128 ~ 127)
 signed   char wheelSpeed = WS_DEF; // mouse wheel speed (-128 ~ 127)
 unsigned int repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 
-unsigned char SCK_KM_address = 0x00; // 0x10 ~ 0x17
-unsigned char SCK_PM_address = 0x00; // 0x18 ~ 0x1B
-unsigned char SCK_FM_address = 0x00; // 0x1C ~ 0x1F
-unsigned char SCK_MM_addresses[5] = {0,}; // 0x20 ~ 0x2F
+unsigned char SCK_KM_address = 0x10; // 0x10 ~ 0x17
+unsigned char SCK_PM_address = 0x18; // 0x18 ~ 0x1B
+unsigned char SCK_FM_address = 0x1C; // 0x1C ~ 0x1F
+unsigned char SCK_MM_addresses[5] = {0x20,0x21,0x22,0x23,0x24}; // 0x20 ~ 0x2F
 
 unsigned char SCK_KM_count = 0;
 unsigned char SCK_PM_count = 0;
@@ -113,13 +113,13 @@ void setup(void) {
         SCK_KM_address = i;
         SCK_KM_count++;
       } else if(i > 0x17 && i < 0x1C) {
-        SCK_PM_address = i;
+        SCK_PM_address = i; 
         SCK_PM_count++;
       } else if(i > 0x1B && i < 0x20) {
         SCK_FM_address = i;
         SCK_FM_count++;
       } else if(i > 0x1F && i < 0x30) {
-        SCK_MM_addresses[SCK_MM_count] = i;
+        //SCK_MM_addresses[SCK_MM_count] = i;
         SCK_MM_count++;
       }
     }
@@ -177,9 +177,8 @@ void loop(void) {
 
   }
   if(SCK_MM_count) { // if there is macro modules
-    for(i=0; i<SCK_MM_count; i++) {
-      I2C_read_byte(SCK_MM_addresses[i]);
-      while(I2C_is_communicating);
+    for(i=0; i<5; i++) {
+      if(!I2C_check(SCK_MM_addresses[i])) continue;
       //Serial.println(I2C_reading_data[0], HEX);
 
       key_mask = 0x80;
@@ -204,13 +203,13 @@ void loop(void) {
         key_state = I2C_reading_data[0] & key_mask;
         if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
           if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            //toggleRepeat(key_state, (j+4), i, SCK_key_layer);
+            //toggleRepeat_MM(key_state, (j+4), i, SCK_key_layer);
           } else {
-            //keyRepeat(key_state, (j+4), i, SCK_key_layer);
+            //keyRepeat_MM(key_state, (j+4), i, SCK_key_layer);
           }
         } else {
           if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            //keyToggle(key_state, (j+4), i, SCK_key_layer);
+            //keyToggle_MM(key_state, (j+4), i, SCK_key_layer);
           } else {
             keyCheck_MM(key_state, (j+4), i, SCK_key_layer);
           }
@@ -220,9 +219,6 @@ void loop(void) {
     }
   }
   // getting key end
-
-  
-  
 
   lock_key = BootKeyboard.getLeds(); // lock key checking
 
@@ -253,6 +249,65 @@ void keyCheck_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) 
   }
 }
 
+/**
+ * @brief click a key
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ MM_V
+ * @param keyposH byte, 0 ~ MM_H
+ * @param keyset byte, 0 ~ KEY_LAYERS
+ */
+void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
+  if (key_state) { // if pressed
+    SCK_MM_pressed[keyposV][module_num] = true;
+  } else {
+    SCK_MM_pressed[keyposV][module_num] = false;
+  }
+}
+
+
+/**
+ * @brief chack and toggle key
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ MM_V
+ * @param keyposH byte, 0 ~ MM_H
+ * @param keyset byte, 0 ~ KEY_LAYERS
+ */
+void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
+  bool TK = SCK_MM_toggled[keyposV][module_num]; // previous state
+
+  if (key_state) { // if pressed
+    if (!SCK_MM_pressed[keyposV][module_num]) { // if first detacted
+      SCK_MM_toggled[keyposV][module_num] = !TK; // toggle state
+      keyHandle(SCK_MM_keyset[key_layer][keyposV][module_num], !TK); 
+      SCK_MM_pressed[keyposV][module_num] = true;
+    }
+  } else { // if not pressed
+    SCK_MM_pressed[keyposV][module_num] = false;
+  }
+}
+
+/**
+ * @brief toggle & click a key
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ MM_V
+ * @param keyposH byte, 0 ~ MM_H
+ * @param keyset byte, 0 ~ KEY_LAYERS
+ */
+void toggleRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
+  bool TK = SCK_MM_toggled[keyposV][module_num]; // previous state
+
+  if (key_state) { // if pressed
+    if (!SCK_MM_pressed[keyposV][module_num]) { // if first detacted
+      SCK_MM_toggled[keyposV][module_num] = !TK; // toggle state
+      SCK_MM_pressed[keyposV][module_num] = true;
+    }
+  } else { // if not pressed
+    SCK_MM_pressed[keyposV][module_num] = false;
+  }
+}
 
 /**
  * @brief check keycode and execute correct function
