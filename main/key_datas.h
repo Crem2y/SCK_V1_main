@@ -57,9 +57,9 @@ byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
 // -- How to set the mode-code --
 // set bit 7~0, if key is {1,2,3,4}
 // bit 7 : rsw ccw toggle mode? (not recommended)
-// bit 6 : rsw ccw repeat mode? (not recommended)
+// bit 6 : rsw ccw repeat mode?
 // bit 5 : rsw cw  toggle mode? (not recommended)
-// bit 4 : rsw cw  repeat mode? (not recommended)
+// bit 4 : rsw cw  repeat mode?
 // bit 3 : rsw sw toggle mode?
 // bit 2 : rsw sw repeat mode?
 // bit 1 : key 1 toggle mode?
@@ -75,7 +75,7 @@ byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
 // bit 0 : key 5 repeat mode? 
 
 byte SCK_MM_keyset[KEY_LAYERS][MM_V+2][MM_H] = { // for Macro Module (FN, V, MM_num)
-  {{0x00,0x00,0x00,0x00,0x00}, // normal key layer
+  {{0x50,0x50,0x50,0x50,0x50}, // normal key layer
    {0x00,0x00,0x00,0x00,0x00},
    {C_VD,'z' ,0x00,0x00,0x00}, // key data start
    {C_VU,'y' ,0x00,0x00,0x00},
@@ -86,7 +86,7 @@ byte SCK_MM_keyset[KEY_LAYERS][MM_V+2][MM_H] = { // for Macro Module (FN, V, MM_
    {'7' ,'g' ,0x00,0x00,0x00},
    {'8' ,'h' ,0x00,0x00,0x00}},
 
-  {{0x00,0x00,0x00,0x00,0x00}, // fn key layer
+  {{0x50,0x50,0x50,0x50,0x50}, // fn key layer
    {0x00,0x00,0x00,0x00,0x00},
    {0x00,0x00,0x00,0x00,0x00}, // key data start
    {0x00,0x00,0x00,0x00,0x00},
