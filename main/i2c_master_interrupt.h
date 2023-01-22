@@ -171,7 +171,7 @@ bool I2C_data_clear(void) {
  * @return false 
  */
 bool I2C_check(unsigned char address) {
-  I2C_reading_data[0] = 0xFF;
+  I2C_reading_data[0] = 0x00;
   if(!I2C_read_byte(address)) return false;
   //Serial.println(" checking...");
   while(I2C_is_communicating);

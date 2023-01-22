@@ -1,3 +1,4 @@
+#pragma once
 //constants or defines
 #define PIXELPIN  4  // neopixel data pin
 #define NUMPIXELS 20 // number of neopixels
