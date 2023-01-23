@@ -7,7 +7,7 @@
  * @brief timer set (1kHz = 1ms)
  * 
  */
-void macro_init(void) {
+void timer_init(void) {
   TCCR3A = 0x00;
   TCCR3B = 0x0A;
   TCNT3 = 0;
