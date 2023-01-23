@@ -1,5 +1,5 @@
 #pragma once
-#include "custom_key_code.h"
+#include "sck_key_code.h"
 
 #define KEY_LAYERS 2
 #define KM_V 6
@@ -98,6 +98,15 @@ byte SCK_MM_keyset[KEY_LAYERS][MM_V+2][MM_H] = { // for Macro Module (FN, V, MM_
    {0x00,0x00,0x00,0x00,0x00},
    {0x00,0x00,0x00,0x00,0x00}},
 };
+
+bool SCK_KM_pressed[KM_V][KM_H] = {0,}; // Keyboard Module key press flags
+bool SCK_KM_toggled[KM_V][KM_H] = {0,}; // Keyboard Module key toggle flags
+
+bool SCK_FM_pressed[FM_V][FM_H] = {0,}; // Fnkey Module key press flags
+bool SCK_FM_toggled[FM_V][FM_H] = {0,}; // Fnkey Module key toggle flags
+
+bool SCK_PM_pressed[PM_V][PM_H] = {0,}; // keyPad Module key press flags
+bool SCK_PM_toggled[PM_V][PM_H] = {0,}; // keyPad Module key toggle flags
 
 bool SCK_MM_pressed[MM_V][MM_H] = {0,}; // Macro Module key press flags
 bool SCK_MM_toggled[MM_V][MM_H] = {0,}; // Macro Module key toggle flags

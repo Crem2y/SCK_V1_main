@@ -2,7 +2,7 @@
 
 #include <EEPROM.h> // ATmega32U4 has 1024 bytes
 
-#include "key_datas.h"
+#include "sck_key_datas.h"
 
 void commandCheck(String str);
 void eepromSave(void);
