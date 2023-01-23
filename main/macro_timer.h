@@ -7,13 +7,12 @@
  * @brief timer set (1kHz = 1ms)
  * 
  */
-void timer0_init(void) {
-  TCCR0A = 0; //TCCR0A initialize
-  TCCR0B = 0; //TCCR0B initialize
-  TCNT0 = 0;  //TCNT0 initialize
-  
-  OCR0A= 250; 
-  TCCR0B |= (1<<WGM02);
-  TCCR0B |= (1<<CS01) | (1<<CS00);
-  TIMSK0 |= (1<<OCIE0A);
+void macro_init(void) {
+  TCCR3A = 0x00;
+  TCCR3B = 0x0A;
+  TCNT3 = 0;
+  OCR3A = 999;
+
+  TIFR3 = 0x02;
+  TIMSK3 = 0x02;
 }

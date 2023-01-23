@@ -10,7 +10,8 @@
 #include "i2c_master_interrupt.h"
 #include "macro_timer.h"
 
-//Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIXELPIN, NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel pixel_key  = Adafruit_NeoPixel(KEYS_NUM, KEY_PIN,  NEO_GRB + NEO_KHZ800);
+//Adafruit_NeoPixel pixel_side = Adafruit_NeoPixel(SIDE_NUM, SIDE_PIN, NEO_GRB + NEO_KHZ800);
 
 byte lock_key;
 String uartString = "";
@@ -22,7 +23,7 @@ unsigned int repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 unsigned char SCK_KM_address = 0x10; // 0x10 ~ 0x17
 unsigned char SCK_PM_address = 0x18; // 0x18 ~ 0x1B
 unsigned char SCK_FM_address = 0x1C; // 0x1C ~ 0x1F
-unsigned char SCK_MM_addresses[5] = {0x20,0x21,0x22,0x23,0x24}; // 0x20 ~ 0x2F
+unsigned char SCK_MM_addresses[MM_H] = {0x20,0x21,0x22,0x23,0x24}; // 0x20 ~ 0x2F
 
 unsigned char SCK_KM_count = 0;
 unsigned char SCK_PM_count = 0;
@@ -36,10 +37,10 @@ bool SCK_power_status = false;
 volatile unsigned int timeCount = 0; // timer count
 
 /**
- * @brief AVR Interrupt Service Routine (TIMER0_COMPA)
+ * @brief AVR Interrupt Service Routine (TIMER3_COMPA)
  * timer int (1kHz = 1ms)
  */
-ISR(TIMER0_COMPA_vect) {
+ISR(TIMER3_COMPA_vect) {
   timeCount++;
   if (timeCount < repeatSpeed) {
     return;
@@ -99,7 +100,8 @@ void setup(void) {
   Mouse.begin();
   SurfaceDial.begin();
 
-  //pixels.begin();
+  //pixel_key.begin();
+  //pixel_side.begin();
 
   Serial.print("[sys] waiting 3 seconds");
   for(i=0; i<3; i++) {
@@ -167,8 +169,8 @@ void setup(void) {
 
   delay(1000);
   // I2C set end
-  Serial.println("keyboard start!");
-  timer0_init();
+  Serial.println("[sys] keyboard start!");
+  macro_init();
 }
 
 //////////////////////////////// main loop start ////////////////////////////////
@@ -187,18 +189,18 @@ void loop(void) {
   if(SCK_KM_count) { // if there is keyboard modules
     I2C_read_data(SCK_KM_address, 14);
     while(I2C_is_communicating);
-
   }
+
   if(SCK_PM_count) { // if there is keypad modules
     I2C_read_data(SCK_PM_address, 4);
     while(I2C_is_communicating);
-
   }
+
   if(SCK_FM_count) { // if there is fnkey modules
     I2C_read_data(SCK_FM_address, 3);
     while(I2C_is_communicating);
-
   }
+  
   if(SCK_MM_count) { // if there is macro modules
     for(i=0; i<5; i++) {
       if(!I2C_check(SCK_MM_addresses[i])) continue;
@@ -257,8 +259,8 @@ void loop(void) {
  * 
  * @param key byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
- * @param keyposH byte, 0 ~ MM_H
- * @param keyset byte, 0 ~ KEY_LAYERS
+ * @param module_num byte, 0 ~ MM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
  */
 void keyCheck_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
   if (key_state) { // if pressed
@@ -275,10 +277,10 @@ void keyCheck_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) 
 /**
  * @brief click a key
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if not 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
- * @param keyposH byte, 0 ~ MM_H
- * @param keyset byte, 0 ~ KEY_LAYERS
+ * @param module_num byte, 0 ~ MM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
  */
 void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
   if (key_state) { // if pressed
@@ -288,14 +290,13 @@ void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
   }
 }
 
-
 /**
  * @brief chack and toggle key
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if not 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
- * @param keyposH byte, 0 ~ MM_H
- * @param keyset byte, 0 ~ KEY_LAYERS
+ * @param module_num byte, 0 ~ MM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
  */
 void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
   bool TK = SCK_MM_toggled[keyposV][module_num]; // previous state
@@ -314,10 +315,10 @@ void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
 /**
  * @brief toggle & click a key
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if not 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
- * @param keyposH byte, 0 ~ MM_H
- * @param keyset byte, 0 ~ KEY_LAYERS
+ * @param module_num byte, 0 ~ MM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
  */
 void toggleRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer) {
   bool TK = SCK_MM_toggled[keyposV][module_num]; // previous state
