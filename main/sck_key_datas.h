@@ -1,4 +1,5 @@
 #pragma once
+
 #include "sck_key_code.h"
 
 #define KEY_LAYERS 2
