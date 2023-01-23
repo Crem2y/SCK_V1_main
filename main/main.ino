@@ -1,10 +1,10 @@
 // for arduino Leonardo board
-#include <EEPROM.h> // ATmega32U4 has 1024 bytes
 #include <HID-Project.h>
 #include <Adafruit_NeoPixel.h>
 #include <avr/power.h>
 
 #include "sck_module_handle.h"
+#include "command.h"
 
 //Adafruit_NeoPixel pixel_key  = Adafruit_NeoPixel(KEYS_NUM, KEY_PIN,  NEO_GRB + NEO_KHZ800);
 //Adafruit_NeoPixel pixel_side = Adafruit_NeoPixel(SIDE_NUM, SIDE_PIN, NEO_GRB + NEO_KHZ800);
@@ -69,64 +69,6 @@ void loop(void) {
   delay(1);
 }
 //////////////////////////////// main loop end ////////////////////////////////
-
-/////////////// serial function ///////////////
-/**
- * @brief check if String is command
- * 
- * @param str String
- */
-void commandCheck(String str) {
-  Serial.print("[com] command : ");
-  Serial.println(str);
-  if(str == "SAVE") {
-    Serial.println("[com] Saving to EEPROM...");
-    eepromSave();
-  } else if(str == "LOAD") {
-    Serial.println("[com] Loading from EEPROM...");
-    eepromLoad();
-  } else if(str == "PRINT") {
-    Serial.println("[com] Printing data...");
-    printData();
-  } else if(str == "SETMODE") {
-    Serial.println("[com] Setting mode...");
-    setKey();
-  } else {
-    Serial.println("[com] No command!");
-  }
-}
-
-/**
- * @brief save 'keySets' data to EEPROM
- */
-void eepromSave(void) {
-  unsigned int address = 0;
-  byte data = 0;
-
-  Serial.println("Save complete!");
-  Serial.println(String(address)+" of 1024 bytes used");
-}
-
-/**
- * @brief load 'keySets' data from EEPROM
- */
-void eepromLoad(void) {
-
-}
-
-/**
- * @brief print 'keySets' data to serial
- */
-void printData(void) {
-
-}
-
-/**
- * @brief get data from serial and save to 'keysets'
- */
-void setKey(void) {
-
-}
 
 /////////////// user function ///////////////
 
