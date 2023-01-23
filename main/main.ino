@@ -89,12 +89,15 @@ void setup(void) {
   byte i;
 
   pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(P_NL, OUTPUT);
+  pinMode(P_CL, OUTPUT);
+  pinMode(P_SL, OUTPUT);
 
   Serial.begin(115200);
   delay(3000);
   
-  Serial.println("[sys] --SCK V1--");
-  Serial.println("[sys] firmware ver. 0.2.230115");
+  Serial.println("[SCK] --SCK V1--");
+  Serial.println("[SCK] firmware ver. 0.2.230123");
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -103,7 +106,7 @@ void setup(void) {
   //pixel_key.begin();
   //pixel_side.begin();
 
-  Serial.print("[sys] waiting 3 seconds");
+  Serial.print("[SCK] waiting 3 seconds");
   for(i=0; i<3; i++) {
     Serial.print('.');
     delay(1000);
@@ -146,13 +149,13 @@ void setup(void) {
   Serial.println("[I2C] all slaves checked!\n");
   // I2C set end
 
-  Serial.print("[sys] keyboard modules : ");
+  Serial.print("[SCK] keyboard modules : ");
   Serial.println(SCK_KM_count);
-  Serial.print("[sys] keypad modules : ");
+  Serial.print("[SCK] keypad modules : ");
   Serial.println(SCK_PM_count);
-  Serial.print("[sys] fnkey modules : ");
+  Serial.print("[SCK] fnkey modules : ");
   Serial.println(SCK_FM_count);
-  Serial.print("[sys] macro modules : ");
+  Serial.print("[SCK] macro modules : ");
   Serial.println(SCK_MM_count);
 
   if(SCK_KM_count == 0 && SCK_PM_count == 0 && SCK_FM_count == 0 && SCK_MM_count == 0) {
@@ -160,29 +163,31 @@ void setup(void) {
     while(1);
   }
 
-  Serial.print("\n[sys] default mouseSpeed  : ");
+  Serial.print("\n[SCK] default mouseSpeed  : ");
   Serial.println(mouseSpeed);
-  Serial.print("[sys] default wheelSpeed  : ");
+  Serial.print("[SCK] default wheelSpeed  : ");
   Serial.println(wheelSpeed);
-  Serial.print("[sys] default repeatSpeed : ");
+  Serial.print("[SCK] default repeatSpeed : ");
   Serial.println(repeatSpeed);
 
   delay(1000);
   // I2C set end
-  Serial.println("[sys] keyboard start!");
+  Serial.println("[SCK] keyboard start!");
   macro_init();
 }
 
 //////////////////////////////// main loop start ////////////////////////////////
 void loop(void) {
   byte i, j;
-  byte key_mask = 0x01;
+  byte key_mask;
   byte key_state;
   digitalWrite(LED_BUILTIN, HIGH);
   
   while(Serial.available()) { //데이터가 오면
+    TIM_DISABLE;
     uartString = Serial.readStringUntil('\n');
-    Serial.println(uartString);
+    commandCheck(uartString);
+    TIM_ENABLE;
   }
 
   // getting key
@@ -246,7 +251,13 @@ void loop(void) {
   // getting key end
 
   lock_key = BootKeyboard.getLeds(); // lock key checking
+  digitalWrite(P_NL, lock_key & LED_NUM_LOCK);
+  digitalWrite(P_CL, lock_key & LED_CAPS_LOCK);
+  digitalWrite(P_SL, lock_key & LED_SCROLL_LOCK);
 
+  //lock_key
+
+  //Neo_loop(); // neopixel display
   delay(1);
 }
 //////////////////////////////// main loop end ////////////////////////////////
@@ -600,6 +611,64 @@ void sp_Function(byte keycode, bool pressed) {
       break;
     }
   }
+}
+
+/////////////// serial function ///////////////
+/**
+ * @brief check if String is command
+ * 
+ * @param str String
+ */
+void commandCheck(String str) {
+  Serial.print("[com] command : ");
+  Serial.println(str);
+  if(str == "SAVE") {
+    Serial.println("[com] Saving to EEPROM...");
+    eepromSave();
+  } else if(str == "LOAD") {
+    Serial.println("[com] Loading from EEPROM...");
+    eepromLoad();
+  } else if(str == "PRINT") {
+    Serial.println("[com] Printing data...");
+    printData();
+  } else if(str == "SETMODE") {
+    Serial.println("[com] Setting mode...");
+    setKey();
+  } else {
+    Serial.println("[com] No command!");
+  }
+}
+
+/**
+ * @brief save 'keySets' data to EEPROM
+ */
+void eepromSave(void) {
+  unsigned int address = 0;
+  byte data = 0;
+
+  Serial.println("Save complete!");
+  Serial.println(String(address)+" of 1024 bytes used");
+}
+
+/**
+ * @brief load 'keySets' data from EEPROM
+ */
+void eepromLoad(void) {
+
+}
+
+/**
+ * @brief print 'keySets' data to serial
+ */
+void printData(void) {
+
+}
+
+/**
+ * @brief get data from serial and save to 'keysets'
+ */
+void setKey(void) {
+
 }
 
 /////////////// user function ///////////////
