@@ -5,9 +5,8 @@
 
 #include "sck_module_handle.h"
 #include "command.h"
-
-//Adafruit_NeoPixel pixel_key  = Adafruit_NeoPixel(KEYS_NUM, KEY_PIN,  NEO_GRB + NEO_KHZ800);
-//Adafruit_NeoPixel pixel_side = Adafruit_NeoPixel(SIDE_NUM, SIDE_PIN, NEO_GRB + NEO_KHZ800);
+#include "constants.h"
+//#include "neopixel_handle.h"
 
 String uartString = "";
 
@@ -29,8 +28,7 @@ void setup(void) {
   Mouse.begin();
   SurfaceDial.begin();
 
-  //pixel_key.begin();
-  //pixel_side.begin();
+  //Neo_init();
 
   Serial.print("[sys] waiting 3 seconds");
   for(i=0; i<3; i++) {
@@ -63,8 +61,7 @@ void loop(void) {
   digitalWrite(P_SL, SCK_lock_key & LED_SCROLL_LOCK);
 
   //lock_key
-
-  //Neo_loop(); // neopixel display
+  //Neo_loop();
   delay(1);
 }
 //////////////////////////////// main loop end ////////////////////////////////
