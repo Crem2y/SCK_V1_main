@@ -26,58 +26,50 @@
 #define MH_S 0x15 // mouse_wheel_slower
 #define R_F  0x16 // repeat_faster
 #define R_S  0x17 // repeat_slower
-// user function 0x18~0x1F (8)
-#define F_01 0x18 // function_01
-#define F_02 0x19 // function_02
-#define F_03 0x1A // function_03
-#define F_04 0x1B // function_04
-#define F_05 0x1C // function_05
-#define F_06 0x1D // function_06
-#define F_07 0x1E // function_07
-#define F_08 0x1F // function_08
+// ??? 0x18~0x1F (8)
 
-// need "HID-Project.h" (consumer)
-// gamepad 0x88~0xAF (40)
-#define G_LU 0x88 // game_left_stick_up
-#define G_LD 0x89 // game_left_stick_down
-#define G_LL 0x8A // game_left_stick_left
-#define G_LR 0x8B // game_left_stick_right
-#define G_RU 0x8C // game_right_stick_up
-#define G_RD 0x8D // game_right_stick_down
-#define G_RL 0x8E // game_right_stick_left
-#define G_RR 0x8F // game_right_stick_right
-#define G_DU 0x90 // game_dpad_up    (not working well)
-#define G_DD 0x91 // game_dpad_down  (not working well)
-#define G_DL 0x92 // game_dpad_left  (not working well)
-#define G_DR 0x93 // game_dpad_right (not working well)
-#define G_ZU 0x94 // game_left_Zaxis+
-#define G_ZD 0x95 // game_left_Zaxis-
-#define G_ZL 0x96 // game_right_Zaxis+
-#define G_ZR 0x97 // game_right_Zaxis-
-#define G_01 0x98 // game_button_01 (A)
-#define G_02 0x99 // game_button_02 (B)
-#define G_03 0x9A // game_button_03 (X)
-#define G_04 0x9B // game_button_04 (Y)
-#define G_05 0x9C // game_button_05 (LB)
-#define G_06 0x9D // game_button_06 (RB)
-#define G_07 0x9E // game_button_07 (LT)
-#define G_08 0x9F // game_button_08 (RT)
-#define G_09 0xA0 // game_button_09 (MENU)
-#define G_10 0xA1 // game_button_10 (SELECT)
-#define G_11 0xA2 // game_button_11 (LS)
-#define G_12 0xA3 // game_button_12 (RS)
-#define G_13 0xA4 // game_button_13 (DPAD_UP)
-#define G_14 0xA5 // game_button_14 (DPAD_DOWN)
-#define G_15 0xA6 // game_button_15 (DPAD_LEFT)
-#define G_16 0xA7 // game_button_16 (DPAD_RIGHT)
-#define G_17 0xA8 // game_button_17 (안드로이드-최근 앱)
-#define G_18 0xA9 // game_button_18 (안드로이드-홈)
-#define G_19 0xAA // game_button_19 (안드로이드-키보드)
-#define G_20 0xAB // game_button_20
-#define G_21 0xAC // game_button_21 (안드로이드-상단바 내림)
-#define G_22 0xAD // game_button_22 (안드로이드-설정)
-#define G_23 0xAE // game_button_23 (안드로이드-검색)
-#define G_24 0xAF // game_button_24
+
+// user function 0x88~0xAF (40)
+#define F_01 0x88 // function_01
+#define F_02 0x89 // function_02
+#define F_03 0x8A // function_03
+#define F_04 0x8B // function_04
+#define F_05 0x8C // function_05
+#define F_06 0x8D // function_06
+#define F_07 0x8E // function_07
+#define F_08 0x8F // function_08
+#define F_09 0x90 // function_09
+#define F_10 0x91 // function_10
+#define F_11 0x92 // function_11
+#define F_12 0x93 // function_12
+#define F_13 0x94 // function_13
+#define F_14 0x95 // function_14
+#define F_15 0x96 // function_15
+#define F_16 0x97 // function_16
+#define F_17 0x98 // function_17
+#define F_18 0x99 // function_18
+#define F_19 0x9A // function_19
+#define F_20 0x9B // function_20
+#define F_21 0x9C // function_21
+#define F_22 0x9D // function_22
+#define F_23 0x9E // function_23
+#define F_24 0x9F // function_24
+#define F_25 0xA0 // function_25
+#define F_26 0xA1 // function_26
+#define F_27 0xA2 // function_27
+#define F_28 0xA3 // function_28
+#define F_29 0xA4 // function_29
+#define F_30 0xA5 // function_30
+#define F_31 0xA6 // function_31
+#define F_32 0xA7 // function_32
+#define F_33 0xA8 // function_33
+#define F_34 0xA9 // function_34
+#define F_35 0xAA // function_35
+#define F_36 0xAB // function_36
+#define F_37 0xAC // function_37
+#define F_38 0xAD // function_38
+#define F_39 0xAE // function_39
+#define F_40 0xAF // function_40
 
 // consumer key 0xB4~0xC0 (13)
 #define C_VM 0xB4 // con_volume_mute
@@ -98,8 +90,6 @@
 #define S_B  0xEC // surface_button
 #define S_CW 0xED // surface_clockwise
 #define S_CC 0xEE // surface_counter_clockwise
-// LED chenge 0xEF (1)
-#define L_CN 0xEF // LED_change
 
 // special function 0xFC~0xFF (4)
 #define F_S1 0xFC // special_function_01
