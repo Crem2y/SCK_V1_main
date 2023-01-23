@@ -9,7 +9,6 @@
 //Adafruit_NeoPixel pixel_key  = Adafruit_NeoPixel(KEYS_NUM, KEY_PIN,  NEO_GRB + NEO_KHZ800);
 //Adafruit_NeoPixel pixel_side = Adafruit_NeoPixel(SIDE_NUM, SIDE_PIN, NEO_GRB + NEO_KHZ800);
 
-
 String uartString = "";
 
 void setup(void) {

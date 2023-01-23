@@ -91,8 +91,4 @@
 #define S_CW 0xED // surface_clockwise
 #define S_CC 0xEE // surface_counter_clockwise
 
-// special function 0xFC~0xFF (4)
-#define F_S1 0xFC // special_function_01
-#define F_S2 0xFD // special_function_02
-#define F_S3 0xFE // special_function_03
-#define F_S4 0xFF // special_function_04
+// ??? 0xFC~0xFF (4)

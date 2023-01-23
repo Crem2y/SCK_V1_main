@@ -3,10 +3,7 @@
 #include <HID-Project.h>
 
 #include "custom_key_code.h"
-#include "key_datas.h"
 #include "constants.h"
-#include "i2c_master_interrupt.h"
-#include "macro_timer.h"
 
 signed   char mouseSpeed = MS_DEF; // mouse move speed  (-128 ~ 127)
 signed   char wheelSpeed = WS_DEF; // mouse wheel speed (-128 ~ 127)
