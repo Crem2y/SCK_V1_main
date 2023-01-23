@@ -1,7 +1,9 @@
 #pragma once
 //constants or defines
-#define PIXELPIN  4  // neopixel data pin
-#define NUMPIXELS 20 // number of neopixels
+#define KEY_PIN  9  // neopixel data pin
+#define KEYS_NUM 74 // number of neopixels
+#define SIDE_PIN 8  // neopixel data pin
+#define SIDE_NUM 16 // number of neopixels
 #define P_BMAX  15  // PIXEL_BRIGHTMAX
 
 // limit values
