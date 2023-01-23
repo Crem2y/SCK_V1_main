@@ -1,10 +1,14 @@
 #pragma once
-//constants or defines
+// constants and defines
 #define KEY_PIN  9  // neopixel data pin
 #define KEYS_NUM 74 // number of neopixels
 #define SIDE_PIN 8  // neopixel data pin
 #define SIDE_NUM 16 // number of neopixels
-#define P_BMAX  15  // PIXEL_BRIGHTMAX
+#define P_BMAX   15 // PIXEL_BRIGHTMAX
+
+#define P_NL 15 // num lock led pin
+#define P_CL 16 // caps lock led pin
+#define P_SL 17 // scroll lock led pin
 
 // limit values
 #define MS_MAX 120 // mouseSpeed max value (~ 127)

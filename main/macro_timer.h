@@ -1,7 +1,7 @@
 #pragma once
 
-#define TIM_DISABLE TIMSK0&=(0<<OCIE0A)
-#define TIM_ENABLE TIMSK0|=(1<<OCIE0A)
+#define TIM_DISABLE TIMSK3&=(0<<OCIE3A)
+#define TIM_ENABLE TIMSK3|=(1<<OCIE3A)
 
 /**
  * @brief timer set (1kHz = 1ms)
