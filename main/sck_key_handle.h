@@ -3,7 +3,6 @@
 #include <HID-Project.h>
 
 #include "sck_key_code.h"
-#include "constants.h"
 
 // limit values
 #define MS_MAX 120 // mouseSpeed max value (~ 127)
