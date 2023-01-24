@@ -46,24 +46,21 @@ ISR(TIMER3_COMPA_vect) {
   }
 
   byte i,j;
-  byte key_mask;
-  unsigned short mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
+  unsigned short mode_data;
 
   for(i=0; i<MM_H; i++) { // key checking
-    key_mask = 0x80;
-    for(j=0; j<8; j++) {
-      if (mode_data & (0x4000>>(j*2))) { // if repeat mode
-        if (mode_data & (0x8000>>(j*2))) { // if toggle mode
-          if (SCK_MM_toggled[j][i]) { // if toggle flag on
+  mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
+
+    for(j=0; j<MM_V; j++) {
+      if (mode_data & (0x4000 >> (j*2))) { // if repeat mode
+        if ((mode_data & (0x8000 >> (j*2))) && SCK_MM_toggled[j][i]) { // if toggle mode & toggle flag on
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
-          }
         } else if (SCK_MM_pressed[j][i]) {
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
         }
       }
-      key_mask >>= 1;
     }
   }
 
@@ -194,12 +191,12 @@ void SCK_loop(void) {
   }
   
   if(SCK_MM_count) { // if there is macro modules
-    for(i=0; i<5; i++) {
+    for(i=0; i<MM_H; i++) {
       if(!I2C_check(SCK_MM_addresses[i])) continue;
 
       key_mask = 0x80;
       unsigned short mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
-      for(j=0; j<8; j++) {
+      for(j=0; j<MM_V; j++) {
         key_state = I2C_reading_data[0] & key_mask;
         if (mode_data & (0x4000 >> (j*2))) { // if repeat mode
           if (mode_data & (0x8000 >> (j*2))) { // if toggle mode
