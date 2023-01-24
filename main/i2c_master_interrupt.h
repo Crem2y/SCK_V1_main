@@ -2,8 +2,8 @@
 
 #include "i2c_status_code.h"
 
-#define I2C_READING_BYTES_MAX 32          // I2C max reading bytes (1 ~ 255)
-#define I2C_WRITING_BYTES_MAX 32          // I2C max writing bytes (1 ~ 255)
+#define I2C_READING_BYTES_MAX 16          // I2C max reading bytes (1 ~ 255)
+#define I2C_WRITING_BYTES_MAX 40          // I2C max writing bytes (1 ~ 255)
 
 volatile bool I2C_is_initalized = false;           // I2C is initalized
 volatile bool I2C_is_communicating = false;        // I2C is communicating
