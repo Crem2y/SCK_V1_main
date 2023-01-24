@@ -75,7 +75,7 @@ void loop(void) {
 /////////////// user function ///////////////
 void user_func_set(void) {
   user_func[0] = uf_undo;
-  user_func[1] = uf_test;
+  user_func[1] = uf_redo;
 }
 
 void uf_undo(void) {
@@ -90,8 +90,4 @@ void uf_redo(void) {
   Keyboard.press('y');
   Keyboard.release('y');
   Keyboard.release(KEY_LEFT_CTRL);
-}
-
-void uf_test(void) {
-  Serial.println(msCount);
 }
