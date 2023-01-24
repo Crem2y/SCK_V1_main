@@ -20,9 +20,9 @@
 #define RS_CNG 1   // repeatSpeed change value (1 ~ RS_MIN)
 #define RS_DEF 10  // repeatSpeed default value (RS_MAX ~ RS_MIN)
 
-signed   char mouseSpeed = MS_DEF; // mouse move speed  (-128 ~ 127)
-signed   char wheelSpeed = WS_DEF; // mouse wheel speed (-128 ~ 127)
-unsigned int repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
+signed   char  mouseSpeed  = MS_DEF; // mouse move speed  (-128 ~ 127)
+signed   char  wheelSpeed  = WS_DEF; // mouse wheel speed (-128 ~ 127)
+unsigned short repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 
 void SCK_func_none(void);
 void (*user_func[40])(void);

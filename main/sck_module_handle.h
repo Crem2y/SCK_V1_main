@@ -18,14 +18,18 @@ unsigned char SCK_FM_count = 0;
 unsigned char SCK_MM_count = 0;
 
 unsigned char SCK_key_layer = 0;
-bool SCK_power_status = false;
+
+bool SCK_led_power = false;
 byte SCK_lock_key;
 
-volatile unsigned int msCount = 0; // timer count
+volatile unsigned short msCount = 0; // timer count
 
 void SCK_init(void);
 void SCK_loop(void);
 
+void keyCheck_KM(byte key_state, byte keyposV, byte keyposH, byte key_layer);
+void keyCheck_PM(byte key_state, byte keyposV, byte keyposH, byte key_layer);
+void keyCheck_FM(byte key_state, byte keyposV, byte keyposH, byte key_layer);
 void keyCheck_MM(byte key_state, byte keyposV, byte module_num, byte key_layer);
 void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer);
 void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer);
@@ -43,12 +47,13 @@ ISR(TIMER3_COMPA_vect) {
 
   byte i,j;
   byte key_mask;
+  unsigned short mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
 
   for(i=0; i<MM_H; i++) { // key checking
     key_mask = 0x80;
-    for(j=0; j<4; j++) {
-      if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x40>>(j*2))) { // if repeat mode
-        if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+    for(j=0; j<8; j++) {
+      if (mode_data & (0x4000>>(j*2))) { // if repeat mode
+        if (mode_data & (0x8000>>(j*2))) { // if toggle mode
           if (SCK_MM_toggled[j][i]) { // if toggle flag on
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
@@ -56,20 +61,6 @@ ISR(TIMER3_COMPA_vect) {
         } else if (SCK_MM_pressed[j][i]) {
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], true); // click a key
           SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][2+j][i], false);
-        }
-      }
-      key_mask >>= 1;
-    } // key_mask = 0x08
-    for(j=0; j<4; j++) {
-      if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
-        if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-          if (SCK_MM_toggled[4+j][i]) { // if toggle flag on
-          SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], true); // click a key
-          SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], false);
-          }
-        } else if (SCK_MM_pressed[4+j][i]) {
-          SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], true); // click a key
-          SCK_keyHandle(SCK_MM_keyset[SCK_key_layer][6+j][i], false);
         }
       }
       key_mask >>= 1;
@@ -163,62 +154,138 @@ void SCK_loop(void) {
   if(SCK_KM_count) { // if there is keyboard modules
     I2C_read_data(SCK_KM_address, 14);
     while(I2C_is_communicating);
+
+    for(i=0; i<KM_H; i++) {
+      key_mask = 0x20;
+      for(j=0; j<KM_V; j++) {
+        key_state = I2C_reading_data[i] & key_mask;
+        keyCheck_KM(key_state, j, i, SCK_key_layer);
+        key_mask >>= 1;
+      }
+    }
   }
 
   if(SCK_PM_count) { // if there is keypad modules
     I2C_read_data(SCK_PM_address, 4);
     while(I2C_is_communicating);
+
+    for(i=0; i<PM_H; i++) {
+      key_mask = 0x10;
+      for(j=0; j<PM_V; j++) {
+        key_state = I2C_reading_data[i] & key_mask;
+        keyCheck_PM(key_state, j, i, SCK_key_layer);
+        key_mask >>= 1;
+      }
+    }
   }
 
   if(SCK_FM_count) { // if there is fnkey modules
     I2C_read_data(SCK_FM_address, 3);
     while(I2C_is_communicating);
+
+    for(i=0; i<FM_H; i++) {
+      key_mask = 0x10;
+      for(j=0; j<FM_V; j++) {
+        key_state = I2C_reading_data[i] & key_mask;
+        keyCheck_FM(key_state, j, i, SCK_key_layer);
+        key_mask >>= 1;
+      }
+    }
   }
   
   if(SCK_MM_count) { // if there is macro modules
     for(i=0; i<5; i++) {
       if(!I2C_check(SCK_MM_addresses[i])) continue;
-      //Serial.println(I2C_reading_data[0], HEX);
 
       key_mask = 0x80;
-      for(j=0; j<4; j++) {
+      unsigned short mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
+      for(j=0; j<8; j++) {
         key_state = I2C_reading_data[0] & key_mask;
-        if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x40>>(j*2))) { // if repeat mode
-          if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+        if (mode_data & (0x4000 >> (j*2))) { // if repeat mode
+          if (mode_data & (0x8000 >> (j*2))) { // if toggle mode
             toggleRepeat_MM(key_state, j, i, SCK_key_layer);
           } else {
             keyRepeat_MM(key_state, j, i, SCK_key_layer);
           }
         } else {
-          if (SCK_MM_keyset[SCK_key_layer][0][i] & (0x80>>(j*2))) { // if toggle mode
+          if (mode_data & (0x8000 >> (j*2))) { // if toggle mode
             keyToggle_MM(key_state, j, i, SCK_key_layer);
           } else {
             keyCheck_MM(key_state, j, i, SCK_key_layer);
           }
         }
         key_mask >>= 1;
-      } // key_mask = 0x08
-      for(j=0; j<4; j++) {
-        key_state = I2C_reading_data[0] & key_mask;
-        if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x40>>(j*2))) { // if repeat mode
-          if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            toggleRepeat_MM(key_state, (j+4), i, SCK_key_layer);
-          } else {
-            keyRepeat_MM(key_state, (j+4), i, SCK_key_layer);
-          }
-        } else {
-          if (SCK_MM_keyset[SCK_key_layer][1][i] & (0x80>>(j*2))) { // if toggle mode
-            keyToggle_MM(key_state, (j+4), i, SCK_key_layer);
-          } else {
-            keyCheck_MM(key_state, (j+4), i, SCK_key_layer);
-          }
-        }
-        key_mask >>= 1;
       }
     }
   }
+  // getting key end
 
   SCK_lock_key = BootKeyboard.getLeds(); // lock key checking
+
+  // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
+  i = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  I2C_writing_data[0] = i;
+  I2C_write_byte(I2C_GCA);
+}
+
+/**
+ * @brief chack and press a key once
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ FM_V
+ * @param keyposH byte, 0 ~ FM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
+ */
+void keyCheck_KM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
+  if (key_state) { // if pressed
+    if (!SCK_KM_pressed[keyposV][keyposH]) { // if first detacted
+      SCK_keyHandle(SCK_KM_keyset[key_layer][keyposV][keyposH], true); // press a key
+      SCK_KM_pressed[keyposV][keyposH] = true;
+    }
+  } else if (SCK_KM_pressed[keyposV][keyposH]) { // if key released
+    SCK_keyHandle(SCK_KM_keyset[key_layer][keyposV][keyposH], false); // release a key
+    SCK_KM_pressed[keyposV][keyposH] = false;
+  }
+}
+
+/**
+ * @brief chack and press a key once
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ FM_V
+ * @param keyposH byte, 0 ~ FM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
+ */
+void keyCheck_PM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
+  if (key_state) { // if pressed
+    if (!SCK_PM_pressed[keyposV][keyposH]) { // if first detacted
+      SCK_keyHandle(SCK_PM_keyset[key_layer][keyposV][keyposH], true); // press a key
+      SCK_PM_pressed[keyposV][keyposH] = true;
+    }
+  } else if (SCK_PM_pressed[keyposV][keyposH]) { // if key released
+    SCK_keyHandle(SCK_PM_keyset[key_layer][keyposV][keyposH], false); // release a key
+    SCK_PM_pressed[keyposV][keyposH] = false;
+  }
+}
+
+/**
+ * @brief chack and press a key once
+ * 
+ * @param key byte, if 0, key is pressed
+ * @param keyposV byte, 0 ~ FM_V
+ * @param keyposH byte, 0 ~ FM_H
+ * @param key_layer byte, 0 ~ KEY_LAYERS
+ */
+void keyCheck_FM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
+  if (key_state) { // if pressed
+    if (!SCK_FM_pressed[keyposV][keyposH]) { // if first detacted
+      SCK_keyHandle(SCK_FM_keyset[key_layer][keyposV][keyposH], true); // press a key
+      SCK_FM_pressed[keyposV][keyposH] = true;
+    }
+  } else if (SCK_FM_pressed[keyposV][keyposH]) { // if key released
+    SCK_keyHandle(SCK_FM_keyset[key_layer][keyposV][keyposH], false); // release a key
+    SCK_FM_pressed[keyposV][keyposH] = false;
+  }
 }
 
 /**
