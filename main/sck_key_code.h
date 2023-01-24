@@ -27,7 +27,14 @@
 #define R_F  0x16 // repeat_faster
 #define R_S  0x17 // repeat_slower
 // ??? 0x18~0x1F (8)
-
+#define FK_1 0x88 // function_key_01
+#define FK_2 0x89 // function_key_02
+#define L_KC 0x8A // LED_key_change
+#define L_SC 0x8B // LED_side_change
+//#define ---- 0x8C // ???
+//#define ---- 0x8D // ???
+//#define ---- 0x8E // ???
+//#define ---- 0x8F // ???
 
 // user function 0x88~0xAF (40)
 #define F_01 0x88 // function_01

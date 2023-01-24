@@ -49,7 +49,7 @@ ISR(TIMER3_COMPA_vect) {
   unsigned short mode_data;
 
   for(i=0; i<MM_H; i++) { // key checking
-  mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
+    mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
 
     for(j=0; j<MM_V; j++) {
       if (mode_data & (0x4000 >> (j*2))) { // if repeat mode
@@ -74,7 +74,7 @@ ISR(TIMER3_COMPA_vect) {
 void SCK_init(void) {
   byte i;
 
-  // module set
+  // module check
   if(!I2C_init()) {
     Serial.println("[SCK] i2c init error!");
     while(1);
@@ -108,7 +108,7 @@ void SCK_init(void) {
     delay(1);
   }
   Serial.println("[SCK] all slaves checked!\n");
-  // module set end
+  // module check end
 
   Serial.print("[SCK] keyboard modules : ");
   Serial.println(SCK_KM_count);
