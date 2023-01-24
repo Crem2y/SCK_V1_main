@@ -16,6 +16,7 @@ Adafruit_NeoPixel pixel_side = Adafruit_NeoPixel(SIDE_NUM, SIDE_PIN, NEO_GRB + N
 
 void Neo_init(void);
 void Neo_loop(void);
+void Neo_off(void);
 
 void Neo_init(void) {
   pixel_key.begin();
@@ -24,4 +25,15 @@ void Neo_init(void) {
 
 void Neo_loop(void) {
 
+
+  pixel_key.show();
+  pixel_side.show();
+}
+
+void Neo_off(void) {
+  pixel_key.fill(pixel_side.Color(0,0,0,0),0,0);
+  pixel_side.fill(pixel_side.Color(0,0,0,0),0,0);
+
+  pixel_key.show();
+  pixel_side.show();
 }

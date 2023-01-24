@@ -5,7 +5,7 @@
 
 #include "sck_module_handle.h"
 #include "command.h"
-//#include "neopixel_handle.h"
+#include "neopixel_handle.h"
 
 #define P_NL 15 // num lock led pin
 #define P_CL 16 // caps lock led pin
@@ -31,7 +31,7 @@ void setup(void) {
   Mouse.begin();
   SurfaceDial.begin();
 
-  //Neo_init();
+  Neo_init();
 
   Serial.print("[sys] waiting 3 seconds");
   for(i=0; i<3; i++) {
@@ -45,9 +45,8 @@ void setup(void) {
   user_func_set();
 }
 
-//////////////////////////////// main loop start ////////////////////////////////
+//////////////////////////////// main loop ////////////////////////////////
 void loop(void) {
-  byte i, j;
   digitalWrite(LED_BUILTIN, HIGH);
   
   while(Serial.available()) { //데이터가 오면
@@ -59,22 +58,25 @@ void loop(void) {
 
   SCK_loop();
 
+  // lock led
   digitalWrite(P_NL, SCK_lock_key & LED_NUM_LOCK);
   digitalWrite(P_CL, SCK_lock_key & LED_CAPS_LOCK);
   digitalWrite(P_SL, SCK_lock_key & LED_SCROLL_LOCK);
 
-  //lock_key
-  //Neo_loop();
+  if(SCK_led_power) {
+    Neo_loop();
+  } else {
+    Neo_off();
+  }
+
   delay(1);
 }
-//////////////////////////////// main loop end ////////////////////////////////
 
 /////////////// user function ///////////////
-
 void user_func_set(void) {
   user_func[0] = myfunc;
 }
 
 void myfunc(void) {
-  Serial.println("[wow] ?!");
+  Serial.println("[test] test");
 }
