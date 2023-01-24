@@ -66,7 +66,7 @@ void loop(void) {
   if(SCK_led_power) {
     Neo_loop();
   } else {
-    Neo_off();
+    Neo_all_off();
   }
 
   delay(1);
@@ -74,9 +74,24 @@ void loop(void) {
 
 /////////////// user function ///////////////
 void user_func_set(void) {
-  user_func[0] = myfunc;
+  user_func[0] = uf_undo;
+  user_func[1] = uf_test;
 }
 
-void myfunc(void) {
-  Serial.println("[test] test");
+void uf_undo(void) {
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('z');
+  Keyboard.release('z');
+  Keyboard.release(KEY_LEFT_CTRL);
+}
+
+void uf_redo(void) {
+  Keyboard.press(KEY_LEFT_CTRL);
+  Keyboard.press('y');
+  Keyboard.release('y');
+  Keyboard.release(KEY_LEFT_CTRL);
+}
+
+void uf_test(void) {
+  Serial.println(msCount);
 }
