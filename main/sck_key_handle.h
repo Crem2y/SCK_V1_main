@@ -35,6 +35,8 @@ void SCK_code_Function(byte keycode, bool pressed);
 void SCK_code_Consumer(byte keycode, bool pressed);
 void SCK_code_Surface(byte keycode, bool pressed);
 
+//////////////////////////////// functions ////////////////////////////////
+
 /**
  * @brief a function that does nothing
  * 
