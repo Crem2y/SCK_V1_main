@@ -12,7 +12,7 @@
 #define MM_V 8
 #define MM_H 5
 
-byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] = { // for Keyboard Module (FN, V, H)
+const byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] PROGMEM = { // for Keyboard Module (FN, V, H)
   {{0xB1,K___,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD}, // normal key layer
    {'`' ,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,'9' ,'0' ,'-' ,'=' ,0xB2},
    {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,'[' ,']' ,'\\'},
@@ -28,7 +28,7 @@ byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] = { // for Keyboard Module (FN, V, H)
    {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,0x00,0xED,K___,0x84}}
 };
 
-byte SCK_FM_keyset[KEY_LAYERS][FM_V][FM_H] = { // for Fnkey Module (FN, V, H)
+const byte SCK_FM_keyset[KEY_LAYERS][FM_V][FM_H] PROGMEM = { // for Fnkey Module (FN, V, H)
   {{0xCE,0xCF,0xD0}, // normal key layer
    {0xD1,0xD2,0xD3},
    {0xD4,0xD5,0xD6},
@@ -42,7 +42,7 @@ byte SCK_FM_keyset[KEY_LAYERS][FM_V][FM_H] = { // for Fnkey Module (FN, V, H)
    {0xD8,0xD9,0xD7}}
 };
 
-byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
+const byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] PROGMEM = { // for keyPad Module (FN, V, H)
   {{0xDB,0xDC,0xDD,0xDE}, // normal key layer
    {0xE7,0xE8,0xE9,0xDF},
    {0xE4,0xE5,0xE6,K___},
