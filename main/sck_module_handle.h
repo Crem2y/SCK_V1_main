@@ -87,7 +87,7 @@ void SCK_init(void) {
     if(I2C_check(i)) {
       Serial.print("[SCK] 0x");
       Serial.print(i, HEX);
-      Serial.print(" ACK! data : 0x");
+      Serial.print(F(" ACK! data : 0x"));
       if(I2C_reading_data[0] < 0x10) Serial.print('0');
       Serial.println(I2C_reading_data[0], HEX);
 
