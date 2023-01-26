@@ -76,13 +76,13 @@ void SCK_init(void) {
 
   // module check
   if(!I2C_init()) {
-    Serial.println("[SCK] i2c init error!");
+    Serial.println(F("[SCK] i2c init error!"));
     while(1);
   }
 
   sei();
 
-  Serial.println("[SCK] i2c slave scanning...");
+  Serial.println(F("[SCK] i2c slave scanning..."));
   for(i=0x10; i<0x30; i++) {
     if(I2C_check(i)) {
       Serial.print("[SCK] 0x");
@@ -107,34 +107,34 @@ void SCK_init(void) {
     }
     delay(1);
   }
-  Serial.println("[SCK] all slaves checked!\n");
+  Serial.println(F("[SCK] all slaves checked!\n"));
   // module check end
 
-  Serial.print("[SCK] keyboard modules : ");
+  Serial.print(F("[SCK] keyboard modules : "));
   Serial.println(SCK_KM_count);
-  Serial.print("[SCK] keypad modules : ");
+  Serial.print(F("[SCK] keypad modules : "));
   Serial.println(SCK_PM_count);
-  Serial.print("[SCK] fnkey modules : ");
+  Serial.print(F("[SCK] fnkey modules : "));
   Serial.println(SCK_FM_count);
-  Serial.print("[SCK] macro modules : ");
+  Serial.print(F("[SCK] macro modules : "));
   Serial.println(SCK_MM_count);
 
   if(SCK_KM_count == 0 && SCK_PM_count == 0 && SCK_FM_count == 0 && SCK_MM_count == 0) {
-    Serial.println("[SCK] no module detected!");
-    Serial.println("[SCK] Please disconnect the cable.");
+    Serial.println(F("[SCK] no module detected!"));
+    Serial.println(F("[SCK] Please disconnect the cable."));
     while(1);
   }
 
-  Serial.print("\n[SCK] default mouseSpeed  : ");
+  Serial.print(F("\n[SCK] default mouseSpeed  : "));
   Serial.println(mouseSpeed);
-  Serial.print("[SCK] default wheelSpeed  : ");
+  Serial.print(F("[SCK] default wheelSpeed  : "));
   Serial.println(wheelSpeed);
-  Serial.print("[SCK] default repeatSpeed : ");
+  Serial.print(F("[SCK] default repeatSpeed : "));
   Serial.println(repeatSpeed);
 
   SCK_user_func_init();
 
-  Serial.println("[SCK] keyboard start!");
+  Serial.println(F("[SCK] keyboard start!"));
   timer_init();
 }
 

@@ -24,8 +24,8 @@ void setup(void) {
   Serial.begin(115200);
   delay(3000);
   
-  Serial.println("[sys] --SCK V1--");
-  Serial.println("[sys] firmware ver. 0.2.230123");
+  Serial.println(F("[sys] --SCK V1--"));
+  Serial.println(F("[sys] firmware ver. 0.3.230126"));
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -33,7 +33,7 @@ void setup(void) {
 
   Neo_init();
 
-  Serial.print("[sys] waiting 3 seconds");
+  Serial.print(F("[sys] waiting 3 seconds"));
   for(i=0; i<3; i++) {
     Serial.print('.');
     delay(1000);
