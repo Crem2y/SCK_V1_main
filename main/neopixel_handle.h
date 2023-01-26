@@ -9,41 +9,49 @@
 #define NEO_KEY  74 // number of neopixels (key)
 #define NEO_SIDE 16 // number of neopixels (side)
 #define NEO_NUM  NEO_KEY + NEO_SIDE // number of neopixels
-#define NEO_BMAX 15 // PIXEL_BRIGHTMAX
+#define NEO_BMAX 15 // LED max bright (default)
 
-#define NEO_MODE_KEY_MAX 4 // neopixel
-#define NEO_MODE_SIDE_MAX 4 // neopixel
+#define NEO_MODE_KEY_MAX  4 // neopixel modes (key)
+#define NEO_MODE_SIDE_MAX 4 // neopixel modes (side)
 
-Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN,  NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 unsigned short Neo_colors[74+16] = {0,}; // 0xRGBW
 
-byte Neo_count = 0;
-byte Neo_count_key = 0;
-byte Neo_count_side = 0;
+struct _neo_value {
+  byte count;
+  byte mode;
+  byte bright;
+};
 
-byte Neo_mode_key = 0;
-byte Neo_mode_side = 0;
+struct _neo {
+  byte timer;
+  struct _neo_value key;
+  struct _neo_value side;
+} Neo;
 
 void Neo_init(void);
 void Neo_loop(void);
 void Neo_all_off(void);
 
-void Neo_change_key(void);
+void Neo_key_change(void);
 void Neo_key_off(void);
 void Neo_key_rainbow(void);
 
-void Neo_change_side(void);
+void Neo_side_change(void);
 void Neo_side_off(void);
 void Neo_side_rainbow(void);
 
+//////////////////////////////// functions ////////////////////////////////
 
 void Neo_init(void) {
   neopixel.begin();
+  Neo.key.bright = NEO_BMAX;
+  Neo.side.bright = NEO_BMAX;
 }
 
 void Neo_loop(void) {
-  switch(Neo_mode_key) {
+  switch(Neo.key.mode) {
     case 0:
       Neo_key_off();
     break;
@@ -55,7 +63,7 @@ void Neo_loop(void) {
     break;
   }
 
-  switch(Neo_mode_side) {
+  switch(Neo.side.mode) {
     case 0:
       Neo_side_off();
     break;
@@ -76,10 +84,10 @@ void Neo_all_off(void) {
 }
 
 /////////////// neopixel key ///////////////
-void Neo_change_key(void) {
-  Neo_mode_key++;
-  if(Neo_mode_key == NEO_MODE_KEY_MAX) Neo_mode_key = 0;
-  Neo_count_key = 0;
+void Neo_key_change(void) {
+  Neo.key.mode++;
+  if(Neo.key.mode == NEO_MODE_KEY_MAX) Neo.key.mode = 0;
+  Neo.key.count= 0;
 }
 
 void Neo_key_off(void) {
@@ -87,8 +95,8 @@ void Neo_key_off(void) {
 }
 
 void Neo_key_rainbow(void) {
-  Neo_count_key += 1;
-  uint16_t first_hue = Neo_count_key << 8;
+  Neo.key.count += 1;
+  uint16_t first_hue = Neo.key.count << 8;
 
   for (uint16_t i=0; i<NEO_KEY; i++) {
     uint16_t hue = first_hue + (i * 65536) / NEO_KEY;
@@ -99,10 +107,10 @@ void Neo_key_rainbow(void) {
 }
 
 /////////////// neopixel side ///////////////
-void Neo_change_side(void) {
-  Neo_mode_side++;
-  if(Neo_mode_side == NEO_MODE_SIDE_MAX) Neo_mode_side = 0;
-  Neo_count_side = 0;
+void Neo_side_change(void) {
+  Neo.side.mode++;
+  if(Neo.side.mode == NEO_MODE_SIDE_MAX) Neo.side.mode = 0;
+  Neo.side.count = 0;
 }
 
 void Neo_side_off(void) {
@@ -110,8 +118,8 @@ void Neo_side_off(void) {
 }
 
 void Neo_side_rainbow(void) {
-  Neo_count_side += 1;
-  uint16_t first_hue = Neo_count_side << 8;
+  Neo.side.count += 1;
+  uint16_t first_hue = Neo.side.count << 8;
 
   for (uint16_t i=NEO_KEY; i<NEO_NUM; i++) {
     uint16_t hue = first_hue + (i * 65536) / NEO_SIDE;

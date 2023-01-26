@@ -35,6 +35,8 @@ void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
 void keyToggle_MM(byte key_state, byte keyposV, byte module_num, byte key_layer);
 void toggleRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer);
 
+//////////////////////////////// functions ////////////////////////////////
+
 /**
  * @brief AVR Interrupt Service Routine (TIMER3_COMPA)
  * timer int (1kHz = 1ms)
@@ -149,7 +151,7 @@ void SCK_loop(void) {
 
   // getting key
   if(SCK_KM_count) { // if there is keyboard modules
-    I2C_read_data(SCK_KM_address, 14);
+    I2C_read_data(SCK_KM_address, KM_H);
     while(I2C_is_communicating);
 
     for(i=0; i<KM_H; i++) {
@@ -162,22 +164,8 @@ void SCK_loop(void) {
     }
   }
 
-  if(SCK_PM_count) { // if there is keypad modules
-    I2C_read_data(SCK_PM_address, 4);
-    while(I2C_is_communicating);
-
-    for(i=0; i<PM_H; i++) {
-      key_mask = 0x10;
-      for(j=0; j<PM_V; j++) {
-        key_state = I2C_reading_data[i] & key_mask;
-        keyCheck_PM(key_state, j, i, SCK_key_layer);
-        key_mask >>= 1;
-      }
-    }
-  }
-
   if(SCK_FM_count) { // if there is fnkey modules
-    I2C_read_data(SCK_FM_address, 3);
+    I2C_read_data(SCK_FM_address, FM_H);
     while(I2C_is_communicating);
 
     for(i=0; i<FM_H; i++) {
@@ -190,6 +178,20 @@ void SCK_loop(void) {
     }
   }
   
+  if(SCK_PM_count) { // if there is keypad modules
+    I2C_read_data(SCK_PM_address, PM_V);
+    while(I2C_is_communicating);
+
+    for(i=0; i<PM_H; i++) {
+      key_mask = 0x10;
+      for(j=0; j<PM_V; j++) {
+        key_state = I2C_reading_data[i] & key_mask;
+        keyCheck_PM(key_state, j, i, SCK_key_layer);
+        key_mask >>= 1;
+      }
+    }
+  }
+
   if(SCK_MM_count) { // if there is macro modules
     for(i=0; i<MM_H; i++) {
       if(!I2C_check(SCK_MM_addresses[i])) continue;
