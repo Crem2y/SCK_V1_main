@@ -25,7 +25,7 @@ void setup(void) {
   delay(3000);
   
   Serial.println(F("[sys] --SCK V1--"));
-  Serial.println(F("[sys] firmware ver. 0.3.230126"));
+  Serial.println(F("[sys] firmware ver. 0.3.230129"));
 
   BootKeyboard.begin();
   Mouse.begin();
