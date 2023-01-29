@@ -147,6 +147,7 @@ void SCK_code_Normal(byte keycode, bool pressed) {
       case R_S: // repeat_slower
         if (repeatSpeed < RS_MAX) repeatSpeed += RS_CNG;
       break;
+      
     }
   } else {
     switch(keycode) {

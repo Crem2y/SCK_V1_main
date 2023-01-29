@@ -26,6 +26,8 @@ bool I2C_read_data(unsigned char address, unsigned char length);
 bool I2C_write_byte(unsigned char address);
 bool I2C_write_data(unsigned char address, unsigned char length);
 
+//////////////////////////////// functions ////////////////////////////////
+
 /**
  * @brief AVR Interrupt Service Routine (TWI)
  * 

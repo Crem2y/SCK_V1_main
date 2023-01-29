@@ -18,6 +18,19 @@ Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_K
 
 unsigned short Neo_colors[74+16] = {0,}; // 0xRGBW
 
+unsigned short Neo_colors_custom[74+16] = {
+  0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
+  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,    0xFFF0, 
+    0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,   0xFFF0,
+      0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 
+        0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,       0xFFF0,
+  0xFFF0,   0xFFF0,   0xFFF0,                   0xFFF0,                             0xFFF0,   0xFFF0,   0xFFF0,   0xFFF0, 
+
+  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
+  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
+  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0
+}; // 0xRGBW
+
 struct _neo_value {
   byte count;
   byte mode;
@@ -37,10 +50,12 @@ void Neo_all_off(void);
 void Neo_key_change(void);
 void Neo_key_off(void);
 void Neo_key_rainbow(void);
+void Neo_key_fixed(void);
 
 void Neo_side_change(void);
 void Neo_side_off(void);
 void Neo_side_rainbow(void);
+void Neo_side_fixed(void);
 
 //////////////////////////////// functions ////////////////////////////////
 
@@ -58,6 +73,9 @@ void Neo_loop(void) {
     case 1:
       Neo_key_rainbow();
     break;
+    case 2:
+      Neo_key_fixed();
+    break;
     default:
       Neo_key_off();
     break;
@@ -68,7 +86,10 @@ void Neo_loop(void) {
       Neo_side_off();
     break;
     case 1:
-      Neo_key_rainbow();
+      Neo_side_rainbow();
+    break;
+    case 2:
+      Neo_side_fixed();
     break;
     default:
       Neo_side_off();
@@ -83,7 +104,7 @@ void Neo_all_off(void) {
   neopixel.show();
 }
 
-/////////////// neopixel key ///////////////
+/////////////// neopixel (key) ///////////////
 void Neo_key_change(void) {
   Neo.key.mode++;
   if(Neo.key.mode == NEO_MODE_KEY_MAX) Neo.key.mode = 0;
@@ -100,13 +121,20 @@ void Neo_key_rainbow(void) {
 
   for (uint16_t i=0; i<NEO_KEY; i++) {
     uint16_t hue = first_hue + (i * 65536) / NEO_KEY;
-    uint32_t color = neopixel.ColorHSV(hue, 0, NEO_BMAX);
+    uint32_t color = neopixel.ColorHSV(hue, 0, Neo.key.bright);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i, color);
   }
 }
 
-/////////////// neopixel side ///////////////
+void Neo_key_fixed(void) {
+  for(unsigned char i=0; i<NEO_KEY; i++) {
+    unsigned short colordata = Neo_colors_custom[i]; // 0xRGBW
+    neopixel.setPixelColor(i, (colordata & 0xF000 >> 12), (colordata & 0x0F00 >> 8), (colordata & 0x00F0 >> 4));
+  }
+}
+
+/////////////// neopixel (side) ///////////////
 void Neo_side_change(void) {
   Neo.side.mode++;
   if(Neo.side.mode == NEO_MODE_SIDE_MAX) Neo.side.mode = 0;
@@ -123,8 +151,15 @@ void Neo_side_rainbow(void) {
 
   for (uint16_t i=NEO_KEY; i<NEO_NUM; i++) {
     uint16_t hue = first_hue + (i * 65536) / NEO_SIDE;
-    uint32_t color = neopixel.ColorHSV(hue, 0, NEO_BMAX);
+    uint32_t color = neopixel.ColorHSV(hue, 0, Neo.side.bright);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i, color);
+  }
+}
+
+void Neo_side_fixed(void) {
+  for(unsigned char i=0; i<NEO_SIDE; i++) {
+    unsigned short colordata = Neo_colors_custom[i+NEO_KEY]; // 0xRGBW
+    neopixel.setPixelColor(i+NEO_KEY, (colordata & 0xF000 >> 12), (colordata & 0x0F00 >> 8), (colordata & 0x00F0 >> 4));
   }
 }

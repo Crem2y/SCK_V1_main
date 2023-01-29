@@ -153,13 +153,14 @@ void SCK_loop(void) {
   if(SCK_KM_count) { // if there is keyboard modules
     I2C_read_data(SCK_KM_address, KM_H);
     while(I2C_is_communicating);
-
-    for(i=0; i<KM_H; i++) {
-      key_mask = 0x20;
-      for(j=0; j<KM_V; j++) {
-        key_state = I2C_reading_data[i] & key_mask;
-        keyCheck_KM(key_state, j, i, SCK_key_layer);
-        key_mask >>= 1;
+    if(!I2C_err_count) {
+      for(i=0; i<KM_H; i++) {
+        key_mask = 0x20;
+        for(j=0; j<KM_V; j++) {
+          key_state = I2C_reading_data[i] & key_mask;
+          keyCheck_KM(key_state, j, i, SCK_key_layer);
+          key_mask >>= 1;
+        }
       }
     }
   }
@@ -167,13 +168,14 @@ void SCK_loop(void) {
   if(SCK_FM_count) { // if there is fnkey modules
     I2C_read_data(SCK_FM_address, FM_H);
     while(I2C_is_communicating);
-
-    for(i=0; i<FM_H; i++) {
-      key_mask = 0x10;
-      for(j=0; j<FM_V; j++) {
-        key_state = I2C_reading_data[i] & key_mask;
-        keyCheck_FM(key_state, j, i, SCK_key_layer);
-        key_mask >>= 1;
+    if(!I2C_err_count) {
+      for(i=0; i<FM_H; i++) {
+        key_mask = 0x10;
+        for(j=0; j<FM_V; j++) {
+          key_state = I2C_reading_data[i] & key_mask;
+          keyCheck_FM(key_state, j, i, SCK_key_layer);
+          key_mask >>= 1;
+        }
       }
     }
   }
@@ -181,13 +183,14 @@ void SCK_loop(void) {
   if(SCK_PM_count) { // if there is keypad modules
     I2C_read_data(SCK_PM_address, PM_V);
     while(I2C_is_communicating);
-
-    for(i=0; i<PM_H; i++) {
-      key_mask = 0x10;
-      for(j=0; j<PM_V; j++) {
-        key_state = I2C_reading_data[i] & key_mask;
-        keyCheck_PM(key_state, j, i, SCK_key_layer);
-        key_mask >>= 1;
+    if(!I2C_err_count) {
+      for(i=0; i<PM_H; i++) {
+        key_mask = 0x10;
+        for(j=0; j<PM_V; j++) {
+          key_state = I2C_reading_data[i] & key_mask;
+          keyCheck_PM(key_state, j, i, SCK_key_layer);
+          key_mask >>= 1;
+        }
       }
     }
   }

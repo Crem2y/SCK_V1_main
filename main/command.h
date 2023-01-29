@@ -10,6 +10,8 @@ void eepromLoad(void);
 void printData(void);
 void setKey(void);
 
+//////////////////////////////// functions ////////////////////////////////
+
 /**
  * @brief check if String is command
  * 
