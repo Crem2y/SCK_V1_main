@@ -110,17 +110,20 @@ void Neo_all_off(void) {
 }
 
 void Neo_boot(void) {
-  for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
-    Neo_colors[i] += 0x1110;
-    neopixel.setPixelColor(i, (Neo_colors[i] & 0xF000 >> 12), (Neo_colors[i] & 0x0F00 >> 8), (Neo_colors[i] & 0x00F0 >> 4));
-  }
-  if(Neo_colors[0] == 0xFFF0) {
-    for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
-      Neo_colors[i] = 0;
+  for(byte i=0; i<15; i++) {
+    for(byte j=0; j<NEO_KEY+NEO_SIDE; j++) {
+      Neo_colors[j] += 0x1110;
+      neopixel.setPixelColor(j, (Neo_colors[j] & 0xF000 >> 12), (Neo_colors[j] & 0x0F00 >> 8), (Neo_colors[j] & 0x00F0 >> 4));
     }
-    Neo.key.mode = 2;
-    Neo.side.mode = 2;
+    neopixel.show();
+    delay(50);
   }
+
+  for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
+    Neo_colors[i] = 0;
+  }
+  Neo.key.mode = 2;
+  Neo.side.mode = 2;
 }
 
 /////////////// neopixel (key) ///////////////
