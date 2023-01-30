@@ -42,10 +42,7 @@ void setup(void) {
   Serial.println("done!");
   */
 
-  for(i=0; i<15; i++) {
-    Neo_boot();
-    delay(50);
-  }
+  Neo_boot();
 
   SCK_init();
 
