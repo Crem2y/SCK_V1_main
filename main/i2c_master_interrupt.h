@@ -2,8 +2,14 @@
 
 #include "i2c_status_code.h"
 
-#define I2C_READING_BYTES_MAX 32          // I2C max reading bytes (1 ~ 255)
-#define I2C_WRITING_BYTES_MAX 32          // I2C max writing bytes (1 ~ 255)
+#define I2C_READING_BYTES_MAX 16          // I2C max reading bytes (1 ~ 255)
+#define I2C_WRITING_BYTES_MAX 40          // I2C max writing bytes (1 ~ 255)
+
+volatile bool I2C_is_initalized = false;           // I2C is initalized
+volatile bool I2C_is_communicating = false;        // I2C is communicating
+
+volatile unsigned char I2C_reading_data[I2C_READING_BYTES_MAX] = {0,};  // I2C reading data
+volatile unsigned char I2C_writing_data[I2C_WRITING_BYTES_MAX] = {0,};  // I2C writing data
 
 volatile unsigned char I2C_target_address = 0x00;  // I2C target slave address
 volatile unsigned char I2C_mode = 0;               // I2C mode (0 : write , 1 : read)
@@ -11,13 +17,16 @@ volatile unsigned char I2C_bytes_addr = 0;         // I2C bytes address (0 ~ I2C
 volatile unsigned char I2C_bytes_size = 0;         // I2C bytes size (1 ~ I2C_READING_BYTES_MAX or I2C_WRITING_BYTES_MAX)
 volatile unsigned char I2C_err_count = 0;          // I2C error count
 
-volatile unsigned char I2C_reading_data[I2C_READING_BYTES_MAX] = {0,};  // I2C reading data
-volatile unsigned char I2C_writing_data[I2C_WRITING_BYTES_MAX] = {0,};  // I2C writing data
-
-volatile bool I2C_is_initalized = false;           // I2C is initalized
-volatile bool I2C_is_communicating = false;        // I2C is communicating
-
+bool I2C_init(void);
+bool I2C_deinit(void);
+bool I2C_data_clear(void);
+bool I2C_check(unsigned char address);
 bool I2C_read_byte(unsigned char address);
+bool I2C_read_data(unsigned char address, unsigned char length);
+bool I2C_write_byte(unsigned char address);
+bool I2C_write_data(unsigned char address, unsigned char length);
+
+//////////////////////////////// functions ////////////////////////////////
 
 /**
  * @brief AVR Interrupt Service Routine (TWI)
