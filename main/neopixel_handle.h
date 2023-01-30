@@ -16,9 +16,9 @@
 
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
-unsigned short Neo_colors[74+16] = {0,}; // 0xRGBW
+unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
-unsigned short Neo_colors_custom[74+16] = {
+unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
   0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,    0xFFF0, 
     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,   0xFFF0,
@@ -46,6 +46,7 @@ struct _neo {
 void Neo_init(void);
 void Neo_loop(void);
 void Neo_all_off(void);
+void Neo_boot(void);
 
 void Neo_key_change(void);
 void Neo_key_off(void);
@@ -102,6 +103,20 @@ void Neo_loop(void) {
 void Neo_all_off(void) {
   neopixel.clear();
   neopixel.show();
+}
+
+void Neo_boot(void) {
+  for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
+    Neo_colors[i] += 0x1110;
+    neopixel.setPixelColor(i, (Neo_colors[i] & 0xF000 >> 12), (Neo_colors[i] & 0x0F00 >> 8), (Neo_colors[i] & 0x00F0 >> 4));
+  }
+  if(Neo_colors[0] == 0xFFF0) {
+    for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
+      Neo_colors[i] = 0;
+    }
+    Neo.key.mode = 2;
+    Neo.side.mode = 2;
+  }
 }
 
 /////////////// neopixel (key) ///////////////
