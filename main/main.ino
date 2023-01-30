@@ -105,4 +105,8 @@ void uf_redo(void) {
 void led_func_set(void) {
   led_func[0] = Neo_key_change;
   led_func[1] = Neo_side_change;
+  led_func[2] = Neo_key_lighter;
+  led_func[3] = Neo_key_darker;
+  led_func[4] = Neo_side_lighter;
+  led_func[5] = Neo_side_darker;
 }
