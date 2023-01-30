@@ -50,11 +50,15 @@ void Neo_boot(void);
 
 void Neo_key_change(void);
 void Neo_key_off(void);
+void Neo_key_lighter(void);
+void Neo_key_darker(void);
 void Neo_key_rainbow(void);
 void Neo_key_fixed(void);
 
 void Neo_side_change(void);
 void Neo_side_off(void);
+void Neo_side_lighter(void);
+void Neo_side_darker(void);
 void Neo_side_rainbow(void);
 void Neo_side_fixed(void);
 
@@ -130,6 +134,14 @@ void Neo_key_off(void) {
   neopixel.fill(neopixel.Color(0,0,0,0),0,NEO_KEY);
 }
 
+void Neo_key_lighter(void) {
+  Neo.key.bright++;
+}
+
+void Neo_key_darker(void) {
+  Neo.key.bright--;
+}
+
 void Neo_key_rainbow(void) {
   Neo.key.count += 1;
   uint16_t first_hue = Neo.key.count << 8;
@@ -158,6 +170,14 @@ void Neo_side_change(void) {
 
 void Neo_side_off(void) {
   neopixel.fill(neopixel.Color(0,0,0,0),NEO_KEY,0);
+}
+
+void Neo_side_lighter(void) {
+  Neo.side.bright++;
+}
+
+void Neo_side_darker(void) {
+  Neo.side.bright--;
 }
 
 void Neo_side_rainbow(void) {
