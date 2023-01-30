@@ -24,7 +24,11 @@ signed   char  mouseSpeed  = MS_DEF; // mouse move speed  (-128 ~ 127)
 signed   char  wheelSpeed  = WS_DEF; // mouse wheel speed (-128 ~ 127)
 unsigned short repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 
+unsigned char SCK_key_layer = 0;
+
 void SCK_func_none(void);
+void (*led_func[6])(void);
+void SCK_led_func_init(void);
 void (*user_func[40])(void);
 void SCK_user_func_init(void);
 
@@ -42,6 +46,16 @@ void SCK_code_Surface(byte keycode, bool pressed);
  * 
  */
 void SCK_func_none(void) {
+}
+
+/**
+ * @brief initalize led functions
+ * 
+ */
+void SCK_led_func_init(void) {
+  for(byte i=0; i<6; i++) {
+    led_func[i] = SCK_func_none;
+  }
 }
 
 /**
@@ -147,7 +161,30 @@ void SCK_code_Normal(byte keycode, bool pressed) {
       case R_S: // repeat_slower
         if (repeatSpeed < RS_MAX) repeatSpeed += RS_CNG;
       break;
-      
+      case FK_1: // function_key_01
+        SCK_key_layer = 1;
+      break;
+      case FK_2: // function_key_02
+        SCK_key_layer = 2;
+      break;
+      case L_KC: // LED_key_change
+        led_func[0]();
+      break;
+      case L_SC: // LED_side_change
+        led_func[1]();
+      break;
+      case L_KL: // LED_key_lighter
+        led_func[2]();
+      break;
+      case L_KD: // LED_key_darker
+        led_func[3]();
+      break;
+      case L_SL: // LED_side_lighter
+        led_func[4]();
+      break;
+      case L_SD: // LED_side_darker
+        led_func[5]();
+      break;
     }
   } else {
     switch(keycode) {
@@ -165,6 +202,12 @@ void SCK_code_Normal(byte keycode, bool pressed) {
       break;
       case M_5B: // mouse_button_5
         Mouse.release(MOUSE_NEXT);
+      break;
+      case FK_1: // function_key_01
+        SCK_key_layer = 0;
+      break;
+      case FK_2: // function_key_02
+        SCK_key_layer = 0;
       break;
     }
   }

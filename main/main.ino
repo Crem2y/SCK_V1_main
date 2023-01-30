@@ -25,7 +25,7 @@ void setup(void) {
   delay(3000);
   
   Serial.println(F("[sys] --SCK V1--"));
-  Serial.println(F("[sys] firmware ver. 0.3.230129"));
+  Serial.println(F("[sys] firmware ver. 0.4.230130"));
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -33,15 +33,23 @@ void setup(void) {
 
   Neo_init();
 
+  /*
   Serial.print(F("[sys] waiting 3 seconds"));
   for(i=0; i<3; i++) {
     Serial.print('.');
     delay(1000);
   }
   Serial.println("done!");
+  */
+
+  for(i=0; i<15; i++) {
+    Neo_boot();
+    delay(50);
+  }
 
   SCK_init();
 
+  led_func_set();
   user_func_set();
 }
 
@@ -90,4 +98,11 @@ void uf_redo(void) {
   Keyboard.press('y');
   Keyboard.release('y');
   Keyboard.release(KEY_LEFT_CTRL);
+}
+
+
+/////////////// led function ///////////////
+void led_func_set(void) {
+  led_func[0] = Neo_key_change;
+  led_func[1] = Neo_side_change;
 }

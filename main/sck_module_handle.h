@@ -17,8 +17,6 @@ unsigned char SCK_PM_count = 0;
 unsigned char SCK_FM_count = 0;
 unsigned char SCK_MM_count = 0;
 
-unsigned char SCK_key_layer = 0;
-
 bool SCK_led_power = false;
 byte SCK_lock_key;
 
@@ -134,6 +132,7 @@ void SCK_init(void) {
   Serial.print(F("[SCK] default repeatSpeed : "));
   Serial.println(repeatSpeed);
 
+  SCK_led_func_init();
   SCK_user_func_init();
 
   Serial.println(F("[SCK] keyboard start!"));
