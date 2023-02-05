@@ -20,10 +20,15 @@ unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
 unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
+
   0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,    0xFFF0, 
+
     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,   0xFFF0,
+
       0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 
+
         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,       0xFFF0,
+
   0xFFF0,   0xFFF0,   0xFFF0,                   0xFFF0,                             0xFFF0,   0xFFF0,   0xFFF0,   0xFFF0, 
 
   0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
@@ -64,12 +69,20 @@ void Neo_side_fixed(void);
 
 //////////////////////////////// functions ////////////////////////////////
 
+/**
+ * @brief SCK LED initalize
+ * 
+ */
 void Neo_init(void) {
   neopixel.begin();
   Neo.key.bright = NEO_BMAX;
   Neo.side.bright = NEO_BMAX;
 }
 
+/**
+ * @brief SCK LED loop function
+ * 
+ */
 void Neo_loop(void) {
   switch(Neo.key.mode) {
     case 0:
@@ -104,11 +117,19 @@ void Neo_loop(void) {
   neopixel.show();
 }
 
+/**
+ * @brief turn off all LEDs
+ * 
+ */
 void Neo_all_off(void) {
   neopixel.clear();
   neopixel.show();
 }
 
+/**
+ * @brief SCK LED boot animation
+ * 
+ */
 void Neo_boot(void) {
   for(byte i=0; i<15; i++) {
     for(byte j=0; j<NEO_KEY+NEO_SIDE; j++) {
@@ -127,24 +148,45 @@ void Neo_boot(void) {
 }
 
 /////////////// neopixel (key) ///////////////
+
+/**
+ * @brief change LED mode (key)
+ * 
+ */
 void Neo_key_change(void) {
   Neo.key.mode++;
   if(Neo.key.mode == NEO_MODE_KEY_MAX) Neo.key.mode = 0;
   Neo.key.count= 0;
 }
 
+/**
+ * @brief turn off LEDs (key)
+ * 
+ */
 void Neo_key_off(void) {
   neopixel.fill(neopixel.Color(0,0,0,0),0,NEO_KEY);
 }
 
+/**
+ * @brief change LED bright lighter (key)
+ * 
+ */
 void Neo_key_lighter(void) {
   Neo.key.bright++;
 }
 
+/**
+ * @brief change LED bright darker (key)
+ * 
+ */
 void Neo_key_darker(void) {
   Neo.key.bright--;
 }
 
+/**
+ * @brief LED rainbow mode (key)
+ * 
+ */
 void Neo_key_rainbow(void) {
   Neo.key.count += 1;
   uint16_t first_hue = Neo.key.count << 8;
@@ -157,6 +199,10 @@ void Neo_key_rainbow(void) {
   }
 }
 
+/**
+ * @brief LED fixed color mode (key)
+ * 
+ */
 void Neo_key_fixed(void) {
   for(unsigned char i=0; i<NEO_KEY; i++) {
     unsigned short colordata = Neo_colors_custom[i]; // 0xRGBW
@@ -165,24 +211,45 @@ void Neo_key_fixed(void) {
 }
 
 /////////////// neopixel (side) ///////////////
+
+/**
+ * @brief change LED mode (side)
+ * 
+ */
 void Neo_side_change(void) {
   Neo.side.mode++;
   if(Neo.side.mode == NEO_MODE_SIDE_MAX) Neo.side.mode = 0;
   Neo.side.count = 0;
 }
 
+/**
+ * @brief turn off LEDs (side)
+ * 
+ */
 void Neo_side_off(void) {
   neopixel.fill(neopixel.Color(0,0,0,0),NEO_KEY,0);
 }
 
+/**
+ * @brief change LED bright lighter (side)
+ * 
+ */
 void Neo_side_lighter(void) {
   Neo.side.bright++;
 }
 
+/**
+ * @brief change LED bright darker (side)
+ * 
+ */
 void Neo_side_darker(void) {
   Neo.side.bright--;
 }
 
+/**
+ * @brief LED rainbow mode (side)
+ * 
+ */
 void Neo_side_rainbow(void) {
   Neo.side.count += 1;
   uint16_t first_hue = Neo.side.count << 8;
@@ -195,6 +262,10 @@ void Neo_side_rainbow(void) {
   }
 }
 
+/**
+ * @brief LED fixed color mode (side)
+ * 
+ */
 void Neo_side_fixed(void) {
   for(unsigned char i=0; i<NEO_SIDE; i++) {
     unsigned short colordata = Neo_colors_custom[i+NEO_KEY]; // 0xRGBW
