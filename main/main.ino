@@ -11,7 +11,7 @@
 #define P_CL 16 // caps lock led pin
 #define P_SL 17 // scroll lock led pin
 
-const char version_string[20] = "0.4.230205.A";
+const char version_string[20] = "0.4.230205.B";
 String uartString = "";
 
 void setup(void) {

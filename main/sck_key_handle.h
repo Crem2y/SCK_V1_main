@@ -1,5 +1,6 @@
 #pragma once
 
+#include <avr/wdt.h>
 #include <HID-Project.h>
 
 #include "sck_key_code.h"
@@ -38,6 +39,7 @@ void SCK_code_Normal(byte keycode, bool pressed);
 void SCK_code_Function(byte keycode, bool pressed);
 void SCK_code_Consumer(byte keycode, bool pressed);
 void SCK_code_Surface(byte keycode, bool pressed);
+void SCK_code_Debug(byte keycode, bool pressed);
 
 //////////////////////////////// functions ////////////////////////////////
 
@@ -83,6 +85,8 @@ void SCK_keyHandle(unsigned char keycode, bool pressed) {
     SCK_code_Consumer(keycode, pressed);
   } else if (keycode > 0xEB && keycode < 0xF0) {
     SCK_code_Surface(keycode, pressed);
+  } else if (keycode > 0xFB) {
+    SCK_code_Debug(keycode, pressed);
   } else {
     if (pressed) Keyboard.press(keycode);
     else Keyboard.release(keycode);
@@ -321,6 +325,26 @@ void SCK_code_Surface(byte keycode, bool pressed) {
   } else {
     if(keycode == S_B) {
       SurfaceDial.release();
+    }
+  }
+}
+
+/**
+ * @brief special keycode for debug
+ * 
+ * @param keycode unsigned char, 0xFC ~ 0xFF (4)
+ * @param pressed bool, if true, key is pressed
+ */
+void SCK_code_Debug(byte keycode, bool pressed) {
+  if (pressed) {
+    switch(keycode) {
+      case D_RS : // debug_reset
+        wdt_enable(WDTO_15MS);
+        while(1);
+      break;
+      case D_ST: // debug_stop
+        while(1);
+      break;
     }
   }
 }
