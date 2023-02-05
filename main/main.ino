@@ -25,23 +25,13 @@ void setup(void) {
   delay(3000);
   
   Serial.println(F("[sys] --SCK V1--"));
-  Serial.println(F("[sys] firmware ver. 0.4.230130"));
+  Serial.println(F("[sys] firmware ver. 0.4.230205"));
 
   BootKeyboard.begin();
   Mouse.begin();
   SurfaceDial.begin();
 
   Neo_init();
-
-  /*
-  Serial.print(F("[sys] waiting 3 seconds"));
-  for(i=0; i<3; i++) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println("done!");
-  */
-
   Neo_boot();
 
   SCK_init();
@@ -52,7 +42,7 @@ void setup(void) {
 
 //////////////////////////////// main loop ////////////////////////////////
 void loop(void) {
-  digitalWrite(LED_BUILTIN, HIGH);
+  //digitalWrite(LED_BUILTIN, HIGH);
   
   while(Serial.available()) { //데이터가 오면
     TIM_DISABLE;
@@ -96,7 +86,6 @@ void uf_redo(void) {
   Keyboard.release('y');
   Keyboard.release(KEY_LEFT_CTRL);
 }
-
 
 /////////////// led function ///////////////
 void led_func_set(void) {

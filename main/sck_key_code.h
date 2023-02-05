@@ -27,14 +27,14 @@
 #define R_F  0x16 // repeat_faster
 #define R_S  0x17 // repeat_slower
 // FNkey, LED 0x18~0x1F (8)
-#define FK_1 0x88 // function_key_01
-#define FK_2 0x89 // function_key_02
-#define L_KC 0x8A // LED_key_change
-#define L_SC 0x8B // LED_side_change
-#define L_KL 0x8C // LED_key_lighter
-#define L_KD 0x8D // LED_key_darker
-#define L_SL 0x8E // LED_side_lighter
-#define L_SD 0x8F // LED_side_darker
+#define FK_1 0x18 // function_key_01
+#define FK_2 0x19 // function_key_02
+#define L_KC 0x1A // LED_key_change
+#define L_SC 0x1B // LED_side_change
+#define L_KL 0x1C // LED_key_lighter
+#define L_KD 0x1D // LED_key_darker
+#define L_SL 0x1E // LED_side_lighter
+#define L_SD 0x1F // LED_side_darker
 
 // user function 0x88~0xAF (40)
 #define F_01 0x88 // function_01
