@@ -19,7 +19,7 @@ void setKey(void);
  */
 void commandCheck(String str) {
   Serial.print("[com] command : ");
-  Serial.println(str);
+  Serial.print(str);
   if(str == "SAVE") {
     eepromSave();
   } else if(str == "LOAD") {
@@ -29,7 +29,7 @@ void commandCheck(String str) {
   } else if(str == "SETMODE") {
     setKey();
   } else {
-    Serial.println("[com] No command!");
+    Serial.println("...No command!");
   }
 }
 
