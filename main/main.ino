@@ -11,6 +11,7 @@
 #define P_CL 16 // caps lock led pin
 #define P_SL 17 // scroll lock led pin
 
+const char version_string[20] = "0.4.230205.A";
 String uartString = "";
 
 void setup(void) {
@@ -25,7 +26,8 @@ void setup(void) {
   delay(3000);
   
   Serial.println(F("[sys] --SCK V1--"));
-  Serial.println(F("[sys] firmware ver. 0.4.230205"));
+  Serial.print(F("[sys] firmware ver. "));
+  Serial.println(version_string);
 
   BootKeyboard.begin();
   Mouse.begin();

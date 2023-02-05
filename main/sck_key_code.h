@@ -98,4 +98,8 @@
 #define S_CW 0xED // surface_clockwise
 #define S_CC 0xEE // surface_counter_clockwise
 
-// ??? 0xFC~0xFF (4)
+// debug 0xFC~0xFF (4)
+#define D_RS 0xFC // debug_reset
+#define D_ST 0xFD // debug_stop
+//#define K___ 0xFE // ?
+//#define K___ 0xFF // ?
