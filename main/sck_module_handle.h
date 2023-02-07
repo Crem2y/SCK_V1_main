@@ -180,7 +180,7 @@ void SCK_loop(void) {
   }
   
   if(SCK_PM_count) { // if there is keypad modules
-    I2C_read_data(SCK_PM_address, PM_V);
+    I2C_read_data(SCK_PM_address, PM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
       for(i=0; i<PM_H; i++) {
