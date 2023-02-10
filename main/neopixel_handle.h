@@ -58,7 +58,7 @@ void Neo_key_off(void);
 void Neo_key_lighter(void);
 void Neo_key_darker(void);
 void Neo_key_rainbow(void);
-void Neo_key_fixed(void);
+void Neo_key_fixed_custom(void);
 
 void Neo_side_change(void);
 void Neo_side_off(void);
@@ -92,7 +92,10 @@ void Neo_loop(void) {
       Neo_key_rainbow();
     break;
     case 2:
-      Neo_key_fixed();
+      //Neo_key_fixed_color();
+    break;
+    case 3:
+      Neo_key_fixed_custom();
     break;
     default:
       Neo_key_off();
@@ -131,18 +134,12 @@ void Neo_all_off(void) {
  * 
  */
 void Neo_boot(void) {
-  for(byte i=0; i<15; i++) {
-    for(byte j=0; j<NEO_KEY+NEO_SIDE; j++) {
-      Neo_colors[j] += 0x1110;
-      neopixel.setPixelColor(j, (Neo_colors[j] & 0xF000 >> 12), (Neo_colors[j] & 0x0F00 >> 8), (Neo_colors[j] & 0x00F0 >> 4));
-    }
+  for(byte j=0; j<NEO_KEY+NEO_SIDE; j++) {
+    neopixel.setPixelColor(j, 15, 15, 15);
     neopixel.show();
-    delay(50);
+    delay(10);
   }
 
-  for(byte i=0; i<NEO_KEY+NEO_SIDE; i++) {
-    Neo_colors[i] = 0;
-  }
   Neo.key.mode = 2;
   Neo.side.mode = 2;
 }
@@ -203,7 +200,7 @@ void Neo_key_rainbow(void) {
  * @brief LED fixed color mode (key)
  * 
  */
-void Neo_key_fixed(void) {
+void Neo_key_fixed_custom(void) {
   for(unsigned char i=0; i<NEO_KEY; i++) {
     unsigned short colordata = Neo_colors_custom[i]; // 0xRGBW
     neopixel.setPixelColor(i, (colordata & 0xF000 >> 12), (colordata & 0x0F00 >> 8), (colordata & 0x00F0 >> 4));

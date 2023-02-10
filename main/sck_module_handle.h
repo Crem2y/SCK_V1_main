@@ -162,6 +162,7 @@ void SCK_loop(void) {
         }
       }
     }
+    
   }
 
   if(SCK_FM_count) { // if there is fnkey modules

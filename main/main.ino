@@ -7,11 +7,11 @@
 #include "command.h"
 #include "neopixel_handle.h"
 
-#define P_NL 15 // num lock led pin
-#define P_CL 16 // caps lock led pin
-#define P_SL 17 // scroll lock led pin
+#define P_NL 19 // num lock led pin
+#define P_CL 20 // caps lock led pin
+#define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "0.4.230205.B";
+const char version_string[20] = "0.6.230210.A";
 String uartString = "";
 
 void setup(void) {
@@ -36,16 +36,20 @@ void setup(void) {
   Neo_init();
   Neo_boot();
 
+  Neo.key.mode = 1;
+  SCK_led_power = true;
+
   SCK_init();
 
   led_func_set();
   user_func_set();
 }
 
-//////////////////////////////// main loop ////////////////////////////////
+//////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
   //digitalWrite(LED_BUILTIN, HIGH);
-  
+  //while(1);
+
   while(Serial.available()) { //데이터가 오면
     TIM_DISABLE;
     uartString = Serial.readStringUntil('\n');
@@ -56,15 +60,13 @@ void loop(void) {
   SCK_loop();
 
   // lock led
-  digitalWrite(P_NL, SCK_lock_key & LED_NUM_LOCK);
-  digitalWrite(P_CL, SCK_lock_key & LED_CAPS_LOCK);
-  digitalWrite(P_SL, SCK_lock_key & LED_SCROLL_LOCK);
+  digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
+  digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
+  digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
 
-  if(SCK_led_power) {
-    Neo_loop();
-  } else {
-    Neo_all_off();
-  }
+  TIM_DISABLE;
+  //Neo_loop();
+  TIM_ENABLE;
 
   delay(1);
 }
