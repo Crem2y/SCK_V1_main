@@ -58,6 +58,7 @@ void Neo_key_off(void);
 void Neo_key_lighter(void);
 void Neo_key_darker(void);
 void Neo_key_rainbow(void);
+void Neo_key_fixed_color(void);
 void Neo_key_fixed_custom(void);
 
 void Neo_side_change(void);
@@ -92,7 +93,7 @@ void Neo_loop(void) {
       Neo_key_rainbow();
     break;
     case 2:
-      //Neo_key_fixed_color();
+      Neo_key_fixed_color();
     break;
     case 3:
       Neo_key_fixed_custom();
@@ -101,7 +102,7 @@ void Neo_loop(void) {
       Neo_key_off();
     break;
   }
-
+/*
   switch(Neo.side.mode) {
     case 0:
       Neo_side_off();
@@ -116,7 +117,7 @@ void Neo_loop(void) {
       Neo_side_off();
     break;
   }
-
+*/
   neopixel.show();
 }
 
@@ -140,8 +141,8 @@ void Neo_boot(void) {
     delay(10);
   }
 
-  Neo.key.mode = 2;
-  Neo.side.mode = 2;
+  Neo.key.mode = 1;
+  Neo.side.mode = 1;
 }
 
 /////////////// neopixel (key) ///////////////
@@ -185,14 +186,25 @@ void Neo_key_darker(void) {
  * 
  */
 void Neo_key_rainbow(void) {
-  Neo.key.count += 1;
-  uint16_t first_hue = Neo.key.count << 8;
+  Neo.key.count -= 1;
+  uint16_t first_hue = Neo.key.count * 256;
 
   for (uint16_t i=0; i<NEO_KEY; i++) {
-    uint16_t hue = first_hue + (i * 65536) / NEO_KEY;
-    uint32_t color = neopixel.ColorHSV(hue, 0, Neo.key.bright);
+    uint16_t hue = first_hue + (i * 1 * 65536) / NEO_KEY;
+    uint32_t color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i, color);
+  }
+}
+
+/**
+ * @brief LED fixed color mode (key)
+ * 
+ */
+void Neo_key_fixed_color(void) {
+  unsigned short colordata = Neo_colors_custom[0]; // 0xRGBW
+  for(unsigned char i=0; i<NEO_KEY; i++) {
+    neopixel.setPixelColor(i, 15, 8, 0);
   }
 }
 
@@ -252,8 +264,8 @@ void Neo_side_rainbow(void) {
   uint16_t first_hue = Neo.side.count << 8;
 
   for (uint16_t i=NEO_KEY; i<NEO_NUM; i++) {
-    uint16_t hue = first_hue + (i * 65536) / NEO_SIDE;
-    uint32_t color = neopixel.ColorHSV(hue, 0, Neo.side.bright);
+    uint16_t hue = first_hue + (i * 1 * 65536) / NEO_SIDE;
+    uint32_t color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i, color);
   }
