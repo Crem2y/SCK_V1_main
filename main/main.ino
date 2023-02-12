@@ -113,22 +113,24 @@ void debug_reset(void) {
 }
 
 void debug_program(void) {
+  cli();
   I2C_writing_data[0] = 0x00;
   I2C_write_byte(I2C_GCA);
   Neo_all_off();
 
-  while(1) {
+  for(byte i=0; i<10; i++) { // 10s wait
     digitalWrite(P_NL, 0);
     digitalWrite(P_CL, 1);
     digitalWrite(P_SL, 1);
-    delay(200);
+    delay(333);
     digitalWrite(P_NL, 1);
     digitalWrite(P_CL, 0);
     digitalWrite(P_SL, 1);
-    delay(200);
+    delay(333);
     digitalWrite(P_NL, 1);
     digitalWrite(P_CL, 1);
     digitalWrite(P_SL, 0);
-    delay(200);
+    delay(333);
   }
+  sei();
 }
