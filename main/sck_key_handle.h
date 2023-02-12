@@ -1,6 +1,4 @@
 #pragma once
-
-#include <avr/wdt.h>
 #include <HID-Project.h>
 
 #include "sck_key_code.h"
@@ -32,6 +30,8 @@ void (*led_func[6])(void);
 void SCK_led_func_init(void);
 void (*user_func[40])(void);
 void SCK_user_func_init(void);
+void (*debug_func[4])(void);
+void SCK_debug_func_init(void);
 
 void SCK_keyHandle(unsigned char keycode, bool pressed);
 
@@ -69,6 +69,17 @@ void SCK_user_func_init(void) {
     user_func[i] = SCK_func_none;
   }
 }
+
+/**
+ * @brief initalize debug functions
+ * 
+ */
+void SCK_debug_func_init(void) {
+  for(byte i=0; i<4; i++) {
+    debug_func[i] = SCK_func_none;
+  }
+}
+
 
 /**
  * @brief check keycode and execute correct function
@@ -337,14 +348,6 @@ void SCK_code_Surface(byte keycode, bool pressed) {
  */
 void SCK_code_Debug(byte keycode, bool pressed) {
   if (pressed) {
-    switch(keycode) {
-      case D_RS : // debug_reset
-        wdt_enable(WDTO_15MS);
-        while(1);
-      break;
-      case D_ST: // debug_stop
-        while(1);
-      break;
-    }
+    debug_func[keycode - 0xFC](); // execute function
   }
 }

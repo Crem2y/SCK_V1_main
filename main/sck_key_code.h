@@ -100,6 +100,6 @@
 
 // debug 0xFC~0xFF (4)
 #define D_RS 0xFC // debug_reset
-#define D_ST 0xFD // debug_stop
-//#define K___ 0xFE // ?
-//#define K___ 0xFF // ?
+#define D_PG 0xFD // debug_program
+#define D_01 0xFE // debug_01
+#define D_02 0xFF // debug_02
