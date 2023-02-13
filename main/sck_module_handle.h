@@ -17,7 +17,7 @@ unsigned char SCK_PM_count = 0;
 unsigned char SCK_FM_count = 0;
 unsigned char SCK_MM_count = 0;
 
-bool SCK_led_power = false;
+bool SCK_led_power = true;
 byte SCK_lock_key;
 
 volatile unsigned short msCount = 0; // timer count
