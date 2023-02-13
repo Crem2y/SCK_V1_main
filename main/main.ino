@@ -12,7 +12,7 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "0.7.230212.B";
+const char version_string[20] = "0.7.230213.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 
@@ -35,9 +35,6 @@ void setup(void) {
   BootKeyboard.begin();
   Mouse.begin();
   SurfaceDial.begin();
-
-  Neo.key.mode = 1;
-  SCK_led_power = true;
 
   SCK_init();
 
