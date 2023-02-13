@@ -18,6 +18,7 @@ Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_K
 
 unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
+unsigned short Neo_colors_fixed[2] = {0xF000, 0x7F00}; // key, side
 unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
 
@@ -66,7 +67,8 @@ void Neo_side_off(void);
 void Neo_side_lighter(void);
 void Neo_side_darker(void);
 void Neo_side_rainbow(void);
-void Neo_side_fixed(void);
+void Neo_side_fixed_color(void);
+void Neo_side_fixed_custom(void);
 
 //////////////////////////////// functions ////////////////////////////////
 
@@ -102,7 +104,7 @@ void Neo_loop(void) {
       Neo_key_off();
     break;
   }
-/*
+
   switch(Neo.side.mode) {
     case 0:
       Neo_side_off();
@@ -111,13 +113,17 @@ void Neo_loop(void) {
       Neo_side_rainbow();
     break;
     case 2:
-      Neo_side_fixed();
+      Neo_side_fixed_color();
+    break;
+    case 3:
+      Neo_side_fixed_custom();
     break;
     default:
       Neo_side_off();
     break;
   }
-*/
+
+  Neo.timer++;
   neopixel.show();
 }
 
@@ -142,7 +148,7 @@ void Neo_boot(void) {
   }
 
   Neo.key.mode = 1;
-  Neo.side.mode = 1;
+  Neo.side.mode = 0;
 }
 
 /////////////// neopixel (key) ///////////////
@@ -186,6 +192,64 @@ void Neo_key_darker(void) {
  * 
  */
 void Neo_key_rainbow(void) {
+  if(Neo.timer % 2 == 0)
+  {
+    Neo.key.count -= 1;
+  }
+  uint16_t first_hue = Neo.key.count * 256;
+  uint16_t hue;
+  uint32_t color;
+
+  hue = first_hue + (0 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<13; i++) {
+    neopixel.setPixelColor(i, color);
+  }
+
+  hue = first_hue + (1 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<14; i++) {
+    neopixel.setPixelColor(i+13, color);
+  }
+
+  hue = first_hue + (2 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<14; i++) {
+    neopixel.setPixelColor(i+27, color);
+  }
+
+  hue = first_hue + (3 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<13; i++) {
+    neopixel.setPixelColor(i+41, color);
+  }
+
+  hue = first_hue + (4 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<12; i++) {
+    neopixel.setPixelColor(i+54, color);
+  }
+
+  hue = first_hue + (5 * 1 * 65536) / 6;
+  color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
+  color = neopixel.gamma32(color);
+
+  for (uint16_t i=0; i<8; i++) {
+    neopixel.setPixelColor(i+66, color);
+  }
+}
+
+void Neo_key_old(void) {
   Neo.key.count -= 1;
   uint16_t first_hue = Neo.key.count * 256;
 
@@ -202,9 +266,9 @@ void Neo_key_rainbow(void) {
  * 
  */
 void Neo_key_fixed_color(void) {
-  unsigned short colordata = Neo_colors_custom[0]; // 0xRGBW
+  unsigned short colordata = Neo_colors_fixed[0]; // 0xRGBW
   for(unsigned char i=0; i<NEO_KEY; i++) {
-    neopixel.setPixelColor(i, 15, 8, 0);
+    neopixel.setPixelColor(i, ((colordata & 0xF000) >> 12), ((colordata & 0x0F00) >> 8), ((colordata & 0x00F0) >> 4));
   }
 }
 
@@ -215,7 +279,7 @@ void Neo_key_fixed_color(void) {
 void Neo_key_fixed_custom(void) {
   for(unsigned char i=0; i<NEO_KEY; i++) {
     unsigned short colordata = Neo_colors_custom[i]; // 0xRGBW
-    neopixel.setPixelColor(i, (colordata & 0xF000 >> 12), (colordata & 0x0F00 >> 8), (colordata & 0x00F0 >> 4));
+    neopixel.setPixelColor(i, ((colordata & 0xF000) >> 12), ((colordata & 0x0F00) >> 8), ((colordata & 0x00F0) >> 4));
   }
 }
 
@@ -275,9 +339,20 @@ void Neo_side_rainbow(void) {
  * @brief LED fixed color mode (side)
  * 
  */
-void Neo_side_fixed(void) {
+void Neo_side_fixed_color(void) {
+  unsigned short colordata = Neo_colors_fixed[1]; // 0xRGBW
+  for(unsigned char i=0; i<NEO_SIDE; i++) {
+    neopixel.setPixelColor(i+NEO_KEY, ((colordata & 0xF000) >> 12), ((colordata & 0x0F00) >> 8), ((colordata & 0x00F0) >> 4));
+  }
+}
+
+/**
+ * @brief LED fixed color mode (side)
+ * 
+ */
+void Neo_side_fixed_custom(void) {
   for(unsigned char i=0; i<NEO_SIDE; i++) {
     unsigned short colordata = Neo_colors_custom[i+NEO_KEY]; // 0xRGBW
-    neopixel.setPixelColor(i+NEO_KEY, (colordata & 0xF000 >> 12), (colordata & 0x0F00 >> 8), (colordata & 0x00F0 >> 4));
+    neopixel.setPixelColor(i+NEO_KEY, ((colordata & 0xF000) >> 12), ((colordata & 0x0F00) >> 8), ((colordata & 0x00F0) >> 4));
   }
 }

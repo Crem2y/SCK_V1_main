@@ -103,8 +103,8 @@ void led_func_set(void) {
 void debug_func_set(void) {
   debug_func[0] = debug_reset;
   debug_func[1] = debug_program;
-  //debug_func[2] = SCK_func_none;
-  //debug_func[3] = SCK_func_none;
+  debug_func[2] = debug_led_on;
+  debug_func[3] = debug_led_off;
 }
 
 void debug_reset(void) {
@@ -133,4 +133,14 @@ void debug_program(void) {
     delay(333);
   }
   sei();
+}
+
+void debug_led_on(void) {
+  Neo.key.mode = 1;
+  SCK_led_power = true;
+}
+
+void debug_led_off(void) {
+  Neo.key.mode = 0;
+  SCK_led_power = false;
 }

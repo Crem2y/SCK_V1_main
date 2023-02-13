@@ -21,8 +21,8 @@ byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] = { // for Keyboard Module (FN, V, H)
    {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xED,K___,0x84}},
 
   {{D_RS,K___,C_CA,C_VD,C_VU,C_VM,C_MS,C_MR,C_MP,C_MN,C_EM,C_BH,C_BB,C_BF}, // fn key layer
-   {D_PG,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,'9' ,'0' ,'-' ,'=' ,0xB2},
-   {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,'[' ,']' ,'\\'},
+   {D_PG,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,L_SL,L_SD,L_KD,L_KL,0xB2},
+   {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,L_SC,L_KC,'\\'},
    {0xC1,'a' ,'s' ,'d' ,'f' ,'g' ,'h' ,'j' ,'k' ,'l' ,';' ,'\'',K___,0xB0},
    {0x81,'z' ,'x' ,'c' ,'v' ,'b' ,'n' ,'m' ,',' ,'.' ,'/' ,K___,K___,0x85},
    {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xED,K___,0x84}}
@@ -36,8 +36,8 @@ byte SCK_FM_keyset[KEY_LAYERS][FM_V][FM_H] = { // for Fnkey Module (FN, V, H)
    {0xD8,0xD9,0xD7}},
 
   {{0xCE,0xCF,0xD0}, // fn key layer
-   {0xD1,0xD2,0xD3},
-   {0xD4,0xD5,0xD6},
+   {0xD1,D_01,0xD3},
+   {0xD4,D_02,0xD6},
    {K___,0xDA,K___},
    {0xD8,0xD9,0xD7}}
 };
