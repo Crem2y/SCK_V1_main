@@ -12,9 +12,10 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "0.7.230213.A";
+const char version_string[20] = "0.8.230213.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
+bool is_sleep_mode = false;
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -45,26 +46,118 @@ void setup(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
-  while(Serial.available()) {
-    TIM_DISABLE;
-    uart_string = Serial.readStringUntil('\n');
-    commandCheck(uart_string);
-    TIM_ENABLE;
-  }
-
-  SCK_loop();
-
-  // lock led
-  digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
-  digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
-  digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
-
-  TIM_DISABLE;
-  Neo_loop();
-  TIM_ENABLE;
-
-  delay(1);
+  normal_loop();
+  if(is_sleep_mode)
+    sleep_loop();
 }
+
+void normal_loop(void) {
+  SCK_led_power = true;
+  while(true) {
+    while(Serial.available()) {
+      TIM_DISABLE;
+      uart_string = Serial.readStringUntil('\n');
+      commandCheck(uart_string);
+      TIM_ENABLE;
+    }
+
+    SCK_loop();
+
+    // lock led
+    digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
+    digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
+    digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
+
+    TIM_DISABLE;
+    Neo_loop();
+    TIM_ENABLE;
+
+    if(!(SCK_lock_key & 0x07)) { // if all leds are off
+      byte k=0;
+      for(byte i=0; i<KM_V; i++) {
+        for(byte j=0; j<KM_H; j++) {
+          if(SCK_KM_pressed[i][j]) {
+            k++;
+            break;
+          }
+        }
+      }
+      if(k == 0) {
+        sleep_count++;
+        if(sleep_count > 12000) { // 200 = 1s
+          sleep_count = 0;
+          is_sleep_mode = true;
+          return;
+        }
+      } else {
+        sleep_count = 0;
+      }
+    }
+
+    delay(1);
+  }
+  return;
+}
+
+void sleep_loop(void) {
+  TIM_DISABLE;
+  SCK_led_power = false;
+  Neo.key.mode  = NEO_MODE_NONE;
+  Neo.side.mode = NEO_MODE_NONE;
+  Neo_loop();
+
+  while(is_sleep_mode) {
+    SCK_loop();
+
+    if(SCK_lock_key & 0x07) {
+      break;
+    }
+    
+    byte k=0;
+
+    for(byte i=0; i<KM_V; i++) {
+      for(byte j=0; j<KM_H; j++) {
+        if(SCK_KM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(byte i=0; i<FM_V; i++) {
+      for(byte j=0; j<FM_H; j++) {
+        if(SCK_FM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(byte i=0; i<PM_V; i++) {
+      for(byte j=0; j<PM_H; j++) {
+        if(SCK_PM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(byte i=0; i<MM_V; i++) {
+      for(byte j=0; j<MM_H; j++) {
+        if(SCK_MM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    if(k > 0) {
+      break;
+    }
+
+    delay(10);
+  }
+  SCK_loop();
+  Neo_boot();
+  TIM_ENABLE;
+}
+
 
 /////////////// user function ///////////////
 void user_func_set(void) {
