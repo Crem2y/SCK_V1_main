@@ -9,6 +9,7 @@ void eepromSave(void);
 void eepromLoad(void);
 void printData(void);
 void setKey(void);
+char* firm_ver;
 
 //////////////////////////////// functions ////////////////////////////////
 
@@ -18,8 +19,9 @@ void setKey(void);
  * @param str String
  */
 void commandCheck(String str) {
-  Serial.print("[com] command : ");
+  Serial.print("[com] ");
   Serial.print(str);
+  Serial.print(" : ");
   if(str == "SAVE") {
     eepromSave();
   } else if(str == "LOAD") {
@@ -28,8 +30,10 @@ void commandCheck(String str) {
     printData();
   } else if(str == "SETMODE") {
     setKey();
+  } else if(str == "FIRMVER") {
+    Serial.println(firm_ver);
   } else {
-    Serial.println("...No command!");
+    Serial.println("No command!");
   }
 }
 

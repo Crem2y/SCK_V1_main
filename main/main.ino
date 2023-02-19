@@ -12,7 +12,7 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "0.8.230213.A";
+const char version_string[20] = "0.9.230219.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
@@ -32,6 +32,7 @@ void setup(void) {
   Serial.println(F("[sys] --SCK V1--"));
   Serial.print(F("[sys] firmware ver. "));
   Serial.println(version_string);
+  firm_ver = (char *)version_string;
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -52,7 +53,6 @@ void loop(void) {
 }
 
 void normal_loop(void) {
-  SCK_led_power = true;
   while(true) {
     while(Serial.available()) {
       TIM_DISABLE;
@@ -72,6 +72,32 @@ void normal_loop(void) {
     Neo_loop();
     TIM_ENABLE;
 
+    // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
+    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+    //I2C_write_byte(I2C_GCA);
+
+    if(true) {
+      I2C_writing_data[1] = 0x00;
+      I2C_write_data(I2C_GCA, 2);
+    } else {
+      // 0xRG, 0xBW
+      uint32_t col_temp[6];
+      col_temp[0] = neopixel.getPixelColor(0);
+      col_temp[1] = neopixel.getPixelColor(26);
+      col_temp[2] = neopixel.getPixelColor(27);
+      col_temp[3] = neopixel.getPixelColor(53);
+      col_temp[4] = neopixel.getPixelColor(54);
+      col_temp[5] = neopixel.getPixelColor(73);
+
+      for(byte i=0; i<6; i++) {
+        I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+        I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+        I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+      }
+
+      I2C_write_data(I2C_GCA, 1+18);
+    }
+
     if(!(SCK_lock_key & 0x07)) { // if all leds are off
       byte k=0;
       for(byte i=0; i<KM_V; i++) {
@@ -84,7 +110,7 @@ void normal_loop(void) {
       }
       if(k == 0) {
         sleep_count++;
-        if(sleep_count > 12000) { // 200 = 1s
+        if(sleep_count > 6000) { // 200 = 1s
           sleep_count = 0;
           is_sleep_mode = true;
           return;
@@ -154,6 +180,7 @@ void sleep_loop(void) {
     delay(10);
   }
   SCK_loop();
+  Keyboard.releaseAll();
   Neo_boot();
   TIM_ENABLE;
 }

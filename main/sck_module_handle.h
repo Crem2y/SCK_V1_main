@@ -148,6 +148,8 @@ void SCK_loop(void) {
   byte key_mask;
   byte key_state;
 
+  while(I2C_is_communicating);
+
   // getting key
   if(SCK_KM_count) { // if there is keyboard modules
     I2C_read_data(SCK_KM_address, KM_H);
@@ -225,9 +227,8 @@ void SCK_loop(void) {
   SCK_lock_key = BootKeyboard.getLeds(); // lock key checking
 
   // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
-  i = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
-  I2C_writing_data[0] = i;
-  I2C_write_byte(I2C_GCA);
+    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  //I2C_write_byte(I2C_GCA);
 }
 
 /**

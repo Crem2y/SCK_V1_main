@@ -3,6 +3,7 @@
 #include <Adafruit_NeoPixel.h>
 #include <avr/power.h>
 
+#include "i2c_master_interrupt.h"
 #include "sck_key_datas.h"
 
 #define NEO_PIN  9  // neopixel data pin
@@ -26,6 +27,7 @@ Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_K
 unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
 unsigned short Neo_colors_fixed[2] = {0xF000, 0x7F00}; // key, side
+
 unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
 
@@ -276,7 +278,7 @@ void Neo_key_rainbow_2(void) {
 
   for (uint16_t i=0; i<13; i++) {
     hue = first_hue + (i * 1 * 65536) / 13;
-    color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
+    color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i, color);
     neopixel.setPixelColor(53-i, color);
@@ -284,7 +286,7 @@ void Neo_key_rainbow_2(void) {
 
   for (uint16_t i=0; i<14; i++) {
     hue = first_hue + (i * 1 * 65536) / 14;
-    color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
+    color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(26-i, color);
     neopixel.setPixelColor(i+27, color);
@@ -292,14 +294,14 @@ void Neo_key_rainbow_2(void) {
 
   for (uint16_t i=0; i<12; i++) {
     hue = first_hue + (i * 1 * 65536) / 12;
-    color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
+    color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(i+54, color);
   }
 
   for (uint16_t i=0; i<8; i++) {
     hue = first_hue + (i * 1 * 65536) / 8;
-    color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
+    color = neopixel.ColorHSV(hue, 127, Neo.key.bright * 8);
     color = neopixel.gamma32(color);
     neopixel.setPixelColor(73-i, color);
   }
@@ -384,7 +386,15 @@ void Neo_side_rainbow_1(void) {
  * 
  */
 void Neo_side_rainbow_2(void) {
+  Neo.side.count -= 1;
+  uint16_t first_hue = Neo.side.count << 8;
 
+  for (uint16_t i=NEO_KEY; i<NEO_NUM; i++) {
+    uint16_t hue = first_hue + (i * 1 * 65536) / NEO_SIDE;
+    uint32_t color = neopixel.ColorHSV(hue, 127, Neo.side.bright * 8);
+    color = neopixel.gamma32(color);
+    neopixel.setPixelColor(i, color);
+  }
 }
 
 /**
