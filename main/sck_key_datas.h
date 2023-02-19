@@ -18,14 +18,14 @@ byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] = { // for Keyboard Module (FN, V, H)
    {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,'[' ,']' ,'\\'},
    {0xC1,'a' ,'s' ,'d' ,'f' ,'g' ,'h' ,'j' ,'k' ,'l' ,';' ,'\'',K___,0xB0},
    {0x81,'z' ,'x' ,'c' ,'v' ,'b' ,'n' ,'m' ,',' ,'.' ,'/' ,K___,K___,0x85},
-   {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xED,K___,0x84}},
+   {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0x00,K___,0x84}},
 
   {{D_RS,K___,C_CA,C_VD,C_VU,C_VM,C_MS,C_MR,C_MP,C_MN,C_EM,C_BH,C_BB,C_BF}, // fn key layer
    {D_PG,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,L_SL,L_SD,L_KD,L_KL,0xB2},
    {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,L_SC,L_KC,'\\'},
    {0xC1,'a' ,'s' ,'d' ,'f' ,'g' ,'h' ,'j' ,'k' ,'l' ,';' ,'\'',K___,0xB0},
    {0x81,'z' ,'x' ,'c' ,'v' ,'b' ,'n' ,'m' ,',' ,'.' ,'/' ,K___,K___,0x85},
-   {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xED,K___,0x84}}
+   {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xD8,K___,0xD7}}
 };
 
 byte SCK_FM_keyset[KEY_LAYERS][FM_V][FM_H] = { // for Fnkey Module (FN, V, H)
@@ -49,10 +49,10 @@ byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
    {0xE1,0xE2,0xE3,0xE0},
    {0xEA,K___,0xEB,K___}},
 
-  {{0xDB,0xDC,0xDD,0xDE}, // fn key layer
-   {0xE7,0xE8,0xE9,0xDF},
-   {0xE4,0xE5,0xE6,K___},
-   {0xE1,0xE2,0xE3,0xE0},
+  {{M_LB,M_MB,M_RB,MH_U}, // fn key layer
+   {M_UL,M_U ,M_UR,MH_D},
+   {M_L ,M_LB,M_R ,K___},
+   {M_DL,M_D ,M_DR,0xE0},
    {0xEA,K___,0xEB,K___}}
 };
 
@@ -79,7 +79,7 @@ byte SCK_PM_keyset[KEY_LAYERS][PM_V][PM_H] = { // for keyPad Module (FN, V, H)
 byte SCK_MM_keyset[KEY_LAYERS][MM_V+2][MM_H] = { // for Macro Module (FN, V, MM_num)
   {{0x00,0x01,0x00,0x00,0x00}, // normal key layer
    {0x00,0x00,0x00,0x00,0x00},
-   {MH_U ,M_U ,0x00,0x00,0x00}, // key data start
+   {MH_U,M_U ,0x00,0x00,0x00}, // key data start
    {MH_D,M_D ,0x00,0x00,0x00},
    {M_LB,M_RB,0x00,0x00,0x00},
    {F_01,M_RB,0x00,0x00,0x00},
