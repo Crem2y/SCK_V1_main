@@ -8,23 +8,29 @@
 #include "command.h"
 #include "neopixel_handle.h"
 
+#include "bit_calculations.h"
+
+#define KM_RS 18 // keyboard module reset pin
+
 #define P_NL 19 // num lock led pin
 #define P_CL 20 // caps lock led pin
-#define P_SL 21 // scroll lock led pin
+#define P_SL 21 // scroll lock led pin,
 
-const char version_string[20] = "0.9.230219.A";
+const char version_string[20] = "0.9.2302225.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
 
 void setup(void) {
-  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(KM_RS, OUTPUT);
+  digitalWrite(KM_RS, HIGH);
+
   pinMode(P_NL, OUTPUT);
   pinMode(P_CL, OUTPUT);
   pinMode(P_SL, OUTPUT);
 
   Serial.begin(115200);
-  delay(1000); // power stabilization time
+  delay(2000); // power stabilization time
 
   Neo_init();
   Neo_boot();
@@ -40,9 +46,17 @@ void setup(void) {
 
   SCK_init();
 
+  if(SCK_KM_count == 0) {
+    delay(3000);
+    debug_reset();
+  }
+
   led_func_set();
   user_func_set();
   debug_func_set();
+
+  wdt_enable(WDTO_120MS);
+  wdt_reset();
 }
 
 //////////////////////////////// main loop //////////////////////////////// 
@@ -60,7 +74,6 @@ void normal_loop(void) {
       commandCheck(uart_string);
       TIM_ENABLE;
     }
-
     SCK_loop();
 
     // lock led
@@ -76,7 +89,7 @@ void normal_loop(void) {
     I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
     //I2C_write_byte(I2C_GCA);
 
-    if(true) {
+    if(false) {
       I2C_writing_data[1] = 0x00;
       I2C_write_data(I2C_GCA, 2);
     } else {
@@ -119,7 +132,7 @@ void normal_loop(void) {
         sleep_count = 0;
       }
     }
-
+    wdt_reset();
     delay(1);
   }
   return;
@@ -176,7 +189,7 @@ void sleep_loop(void) {
     if(k > 0) {
       break;
     }
-
+    wdt_reset();
     delay(10);
   }
   SCK_loop();
@@ -231,6 +244,7 @@ void debug_reset(void) {
 
 void debug_program(void) {
   cli();
+  wdt_disable();
   I2C_writing_data[0] = 0x00;
   I2C_write_byte(I2C_GCA);
   Neo_all_off();
@@ -249,7 +263,7 @@ void debug_program(void) {
     digitalWrite(P_SL, 0);
     delay(333);
   }
-  sei();
+  debug_reset();
 }
 
 void debug_led_on(void) {
