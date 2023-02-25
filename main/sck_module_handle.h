@@ -119,10 +119,8 @@ void SCK_init(void) {
   Serial.print(F("[SCK] macro modules : "));
   Serial.println(SCK_MM_count);
 
-  if(SCK_KM_count == 0 && SCK_PM_count == 0 && SCK_FM_count == 0 && SCK_MM_count == 0) {
-    Serial.println(F("[SCK] no module detected!"));
-    Serial.println(F("[SCK] Please disconnect the cable."));
-    while(1);
+  if(SCK_KM_count == 0) {
+    Serial.println(F("[SCK] keyboard module error!"));
   }
 
   Serial.print(F("\n[SCK] default mouseSpeed  : "));
@@ -148,7 +146,7 @@ void SCK_loop(void) {
   byte key_mask;
   byte key_state;
 
-  while(I2C_is_communicating);
+  I2C_wait();
 
   // getting key
   if(SCK_KM_count) { // if there is keyboard modules

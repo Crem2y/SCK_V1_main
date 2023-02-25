@@ -43,7 +43,7 @@ void commandCheck(String str) {
 void eepromSave(void) {
   unsigned int address = 0;
   byte data = 0;
-  Serial.println("[com] Saving to EEPROM...");
+  Serial.println("Saving to EEPROM...");
 
   Serial.println("[com] Save complete!");
   Serial.println("[com] "+String(address)+" of 1024 bytes used");
@@ -53,7 +53,7 @@ void eepromSave(void) {
  * @brief load 'keySets' data from EEPROM
  */
 void eepromLoad(void) {
-  Serial.println("[com] Loading from EEPROM...");
+  Serial.println("Loading from EEPROM...");
 
   Serial.println("[com] Load complete!");
 }
@@ -62,7 +62,7 @@ void eepromLoad(void) {
  * @brief print 'keySets' data to serial
  */
 void printData(void) {
-  Serial.println("[com] Printing data...");
+  Serial.println("Printing data...");
 
   Serial.println("[com] Print complete!");
 }
@@ -71,7 +71,7 @@ void printData(void) {
  * @brief get data from serial and save to 'keysets'
  */
 void setKey(void) {
-  Serial.println("[com] Setting mode...");
+  Serial.println("Setting mode...");
 
   Serial.println("[com] Key Setting complete!");
 }
