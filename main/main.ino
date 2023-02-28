@@ -14,9 +14,9 @@
 
 #define P_NL 19 // num lock led pin
 #define P_CL 20 // caps lock led pin
-#define P_SL 21 // scroll lock led pin,
+#define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "0.9.2302225.A";
+const char version_string[20] = "1.0.230228.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
@@ -69,10 +69,12 @@ void loop(void) {
 void normal_loop(void) {
   while(true) {
     while(Serial.available()) {
+      wdt_disable();
       TIM_DISABLE;
       uart_string = Serial.readStringUntil('\n');
       commandCheck(uart_string);
       TIM_ENABLE;
+      wdt_enable(WDTO_120MS);
     }
     SCK_loop();
 

@@ -33,7 +33,8 @@ void commandCheck(String str) {
   } else if(str == "FIRMVER") {
     Serial.println(firm_ver);
   } else {
-    Serial.println("No command!");
+    if(str[0] != '\n')
+      Serial.println("No command!");
   }
 }
 
@@ -42,8 +43,50 @@ void commandCheck(String str) {
  */
 void eepromSave(void) {
   unsigned int address = 0;
-  byte data = 0;
+  byte i,j,k;
+  byte data;
+
   Serial.println("Saving to EEPROM...");
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<KM_V; j++) {
+      for(k=0; k<KM_H; k++) {
+        data = SCK_KM_keyset[i][j][k];
+        EEPROM.write(address, data);
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<FM_V; j++) {
+      for(k=0; k<FM_H; k++) {
+        data = SCK_FM_keyset[i][j][k];
+        EEPROM.write(address, data);
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<PM_V; j++) {
+      for(k=0; k<PM_H; k++) {
+        data = SCK_PM_keyset[i][j][k];
+        EEPROM.write(address, data);
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<MM_V+2; j++) {
+      for(k=0; k<MM_H; k++) {
+        data = SCK_MM_keyset[i][j][k];
+        EEPROM.write(address, data);
+        address++;
+      }
+    }
+  }
 
   Serial.println("[com] Save complete!");
   Serial.println("[com] "+String(address)+" of 1024 bytes used");
@@ -53,16 +96,118 @@ void eepromSave(void) {
  * @brief load 'keySets' data from EEPROM
  */
 void eepromLoad(void) {
+  unsigned int address = 0;
+  byte i,j,k;
+  byte data;
+  
   Serial.println("Loading from EEPROM...");
 
-  Serial.println("[com] Load complete!");
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<KM_V; j++) {
+      for(k=0; k<KM_H; k++) {
+        data = EEPROM.read(address);
+        SCK_KM_keyset[i][j][k] = data;
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<FM_V; j++) {
+      for(k=0; k<FM_H; k++) {
+        data = EEPROM.read(address);
+        SCK_FM_keyset[i][j][k] = data;
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<PM_V; j++) {
+      for(k=0; k<PM_H; k++) {
+        data = EEPROM.read(address);
+        SCK_PM_keyset[i][j][k] = data;
+        address++;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<MM_V+2; j++) {
+      for(k=0; k<MM_H; k++) {
+        data = EEPROM.read(address);
+        SCK_MM_keyset[i][j][k] = data;
+        address++;
+      }
+    }
+  }
+
+  Serial.println("[com] "+String(address)+" bytes load complete!");
 }
 
 /**
  * @brief print 'keySets' data to serial
  */
 void printData(void) {
+  byte i,j,k;
+  byte data;
+
   Serial.println("Printing data...");
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<KM_V; j++) {
+      for(k=0; k<KM_H; k++) {
+        data = SCK_KM_keyset[i][j][k];
+        if(data < 16) Serial.print('0');
+        Serial.print(data, HEX);
+        Serial.print(',');
+      }
+      Serial.println();
+    }
+    Serial.println();
+  }
+  Serial.println();
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<FM_V; j++) {
+      for(k=0; k<FM_H; k++) {
+        data = SCK_FM_keyset[i][j][k];
+        if(data < 16) Serial.print('0');
+        Serial.print(data, HEX);
+        Serial.print(',');
+      }
+      Serial.println();
+    }
+    Serial.println();
+  }
+  Serial.println();
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<PM_V; j++) {
+      for(k=0; k<PM_H; k++) {
+        data = SCK_PM_keyset[i][j][k];
+        if(data < 16) Serial.print('0');
+        Serial.print(data, HEX);
+        Serial.print(',');
+      }
+      Serial.println();
+    }
+    Serial.println();
+  }
+  Serial.println();
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<MM_V+2; j++) {
+      for(k=0; k<MM_H; k++) {
+        data = SCK_MM_keyset[i][j][k];
+        if(data < 16) Serial.print('0');
+        Serial.print(data, HEX);
+        Serial.print(',');
+      }
+      Serial.println();
+    }
+    Serial.println();
+  }
 
   Serial.println("[com] Print complete!");
 }
@@ -71,7 +216,12 @@ void printData(void) {
  * @brief get data from serial and save to 'keysets'
  */
 void setKey(void) {
+  byte i,j,k;
+  byte data;
+
   Serial.println("Setting mode...");
 
-  Serial.println("[com] Key Setting complete!");
+
+
+  Serial.println("[com] Key Setting ended!");
 }
