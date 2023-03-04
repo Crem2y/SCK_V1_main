@@ -16,21 +16,32 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "1.0.230228.A";
+const char version_string[20] = "1.0.230304.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
 
 void setup(void) {
-  pinMode(KM_RS, OUTPUT);
+  pinMode(KM_RS, OUTPUT); // keyboard module reset
   digitalWrite(KM_RS, HIGH);
 
   pinMode(P_NL, OUTPUT);
   pinMode(P_CL, OUTPUT);
   pinMode(P_SL, OUTPUT);
 
+  digitalWrite(P_NL, HIGH);
+  digitalWrite(P_CL, HIGH);
+  digitalWrite(P_SL, HIGH);
+
   Serial.begin(115200);
-  delay(2000); // power stabilization time
+
+  delay(200); // power stabilization time & led check
+  digitalWrite(P_NL, LOW);
+  delay(200);
+  digitalWrite(P_CL, LOW);
+  delay(200);
+  digitalWrite(P_SL, LOW);
+  delay(200);
 
   Neo_init();
   Neo_boot();
@@ -114,9 +125,11 @@ void normal_loop(void) {
     }
 
     if(!(SCK_lock_key & 0x07)) { // if all leds are off
-      byte k=0;
-      for(byte i=0; i<KM_V; i++) {
-        for(byte j=0; j<KM_H; j++) {
+      byte i, j;
+      byte k = 0;
+
+      for(i=0; i<KM_V; i++) {
+        for(j=0; j<KM_H; j++) {
           if(SCK_KM_pressed[i][j]) {
             k++;
             break;
@@ -142,10 +155,13 @@ void normal_loop(void) {
 
 void sleep_loop(void) {
   TIM_DISABLE;
-  SCK_led_power = false;
   Neo.key.mode  = NEO_MODE_NONE;
   Neo.side.mode = NEO_MODE_NONE;
+  SCK_led_power = false;
   Neo_loop();
+  SCK_loop();
+  I2C_writing_data[1] = 0x00;
+  I2C_write_data(I2C_GCA, 2);
 
   while(is_sleep_mode) {
     SCK_loop();
@@ -154,41 +170,42 @@ void sleep_loop(void) {
       break;
     }
     
-    byte k=0;
+    byte i, j;
+    byte k = 0;
 
-    for(byte i=0; i<KM_V; i++) {
-      for(byte j=0; j<KM_H; j++) {
+    for(i=0; i<KM_V; i++) {
+      for(j=0; j<KM_H; j++) {
         if(SCK_KM_pressed[i][j]) {
           k++;
           break;
         }
       }
     }
-    for(byte i=0; i<FM_V; i++) {
-      for(byte j=0; j<FM_H; j++) {
+    for(i=0; i<FM_V; i++) {
+      for(j=0; j<FM_H; j++) {
         if(SCK_FM_pressed[i][j]) {
           k++;
           break;
         }
       }
     }
-    for(byte i=0; i<PM_V; i++) {
-      for(byte j=0; j<PM_H; j++) {
+    for(i=0; i<PM_V; i++) {
+      for(j=0; j<PM_H; j++) {
         if(SCK_PM_pressed[i][j]) {
           k++;
           break;
         }
       }
     }
-    for(byte i=0; i<MM_V; i++) {
-      for(byte j=0; j<MM_H; j++) {
+    for(i=0; i<MM_V; i++) {
+      for(j=0; j<MM_H; j++) {
         if(SCK_MM_pressed[i][j]) {
           k++;
           break;
         }
       }
     }
-    if(k > 0) {
+    if(k) {
       break;
     }
     wdt_reset();
@@ -196,8 +213,7 @@ void sleep_loop(void) {
   }
   SCK_loop();
   Keyboard.releaseAll();
-  Neo_boot();
-  TIM_ENABLE;
+  debug_reset();
 }
 
 
@@ -269,11 +285,11 @@ void debug_program(void) {
 }
 
 void debug_led_on(void) {
-  Neo.key.mode = 1;
+  Neo.key.mode = NEO_MODE_RAINBOW_1;
   SCK_led_power = true;
 }
 
 void debug_led_off(void) {
-  Neo.key.mode = 0;
+  Neo.key.mode = NEO_MODE_NONE;
   SCK_led_power = false;
 }
