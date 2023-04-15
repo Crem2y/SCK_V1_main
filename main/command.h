@@ -3,6 +3,7 @@
 #include <EEPROM.h> // ATmega32U4 has 1024 bytes
 
 #include "sck_key_datas.h"
+#include "neopixel_handle.h"
 
 void commandCheck(String str);
 void eepromSave(void);
@@ -13,15 +14,26 @@ char* firm_ver;
 
 //////////////////////////////// functions ////////////////////////////////
 
+void print_hex(byte data, bool next_line) {
+  if(data < 16) {
+    Serial.print('0');
+  }
+  Serial.print(data, HEX);
+
+  if(next_line) {
+    Serial.println();
+  }
+}
+
 /**
  * @brief check if String is command
  * 
  * @param str String
  */
 void commandCheck(String str) {
-  Serial.print("[com] ");
-  Serial.print(str);
-  Serial.print(" : ");
+  //Serial.print("[com] ");
+  //Serial.println(str);
+
   if(str == "SAVE") {
     eepromSave();
   } else if(str == "LOAD") {
@@ -47,6 +59,12 @@ void eepromSave(void) {
   byte data;
 
   Serial.println("Saving to EEPROM...");
+
+  EEPROM.write(address, Neo.key.mode);
+  address++;
+
+  EEPROM.write(address, Neo.side.mode);
+  address++;
 
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<KM_V; j++) {
@@ -102,6 +120,12 @@ void eepromLoad(void) {
   
   Serial.println("Loading from EEPROM...");
 
+  Neo.key.mode = EEPROM.read(address);
+  address++;
+
+  Neo.side.mode = EEPROM.read(address);
+  address++;
+
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<KM_V; j++) {
       for(k=0; k<KM_H; k++) {
@@ -154,13 +178,17 @@ void printData(void) {
 
   Serial.println("Printing data...");
 
+  print_hex(Neo.key.mode, false);
+  Serial.print(' ');
+  print_hex(Neo.side.mode, true);
+  Serial.println();
+
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<KM_V; j++) {
       for(k=0; k<KM_H; k++) {
         data = SCK_KM_keyset[i][j][k];
-        if(data < 16) Serial.print('0');
-        Serial.print(data, HEX);
-        Serial.print(',');
+        print_hex(data, false);
+        Serial.print(' ');
       }
       Serial.println();
     }
@@ -172,9 +200,8 @@ void printData(void) {
     for(j=0; j<FM_V; j++) {
       for(k=0; k<FM_H; k++) {
         data = SCK_FM_keyset[i][j][k];
-        if(data < 16) Serial.print('0');
-        Serial.print(data, HEX);
-        Serial.print(',');
+        print_hex(data, false);
+        Serial.print(' ');
       }
       Serial.println();
     }
@@ -186,9 +213,8 @@ void printData(void) {
     for(j=0; j<PM_V; j++) {
       for(k=0; k<PM_H; k++) {
         data = SCK_PM_keyset[i][j][k];
-        if(data < 16) Serial.print('0');
-        Serial.print(data, HEX);
-        Serial.print(',');
+        print_hex(data, false);
+        Serial.print(' ');
       }
       Serial.println();
     }
@@ -200,9 +226,8 @@ void printData(void) {
     for(j=0; j<MM_V+2; j++) {
       for(k=0; k<MM_H; k++) {
         data = SCK_MM_keyset[i][j][k];
-        if(data < 16) Serial.print('0');
-        Serial.print(data, HEX);
-        Serial.print(',');
+        print_hex(data, false);
+        Serial.print(' ');
       }
       Serial.println();
     }
@@ -221,7 +246,7 @@ void setKey(void) {
 
   Serial.println("Setting mode...");
 
-
+  Serial.println("not implemented.. :(");
 
   Serial.println("[com] Key Setting ended!");
 }
