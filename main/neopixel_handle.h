@@ -26,7 +26,7 @@ Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_K
 
 unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
-unsigned short Neo_colors_fixed[2] = {0xF000, 0x7F00}; // key, side
+unsigned short Neo_colors_fixed[2] = {0xFFF0, 0xF000}; // key, side
 
 unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
@@ -164,7 +164,7 @@ void Neo_boot(void) {
     delay(10);
   }
 
-  Neo.key.mode = NEO_MODE_RAINBOW_1;
+  Neo.key.mode = NEO_MODE_FIXED_COL;
   Neo.side.mode = NEO_MODE_NONE;
 }
 
