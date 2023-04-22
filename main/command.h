@@ -25,6 +25,32 @@ void print_hex(byte data, bool next_line) {
   }
 }
 
+char hex2byte(char highdata, char lowdata) { // '0' ~ 'F' to 0x00 ~ 0x0F
+  char data = 0;
+
+  if(highdata > 0x29 && highdata < 0x3A)
+  {
+    data = (highdata - '0');
+  }
+  else if(highdata > 0x40 && highdata < 0x47)
+  {
+    data = ((highdata - 'A') + 10);
+  }
+
+  data = data << 4;
+
+  if(lowdata > 0x29 && lowdata < 0x3A)
+  {
+    data += (lowdata - '0') & 0x0F;
+  }
+  else if(lowdata > 0x40 && lowdata < 0x47)
+  {
+    data += ((lowdata - 'A') + 10) & 0x0F;
+  }
+
+  return data;
+}
+
 /**
  * @brief check if String is command
  * 
@@ -243,10 +269,64 @@ void printData(void) {
 void setKey(void) {
   byte i,j,k;
   byte data;
+  String str;
 
   Serial.println("Setting mode...");
 
-  Serial.println("not implemented.. :(");
+  while(!Serial.available());
+  str = Serial.readStringUntil('\n');
+
+  data = hex2byte(str[0], str[1]);
+  Neo.key.mode = data;
+  data = hex2byte(str[2], str[3]);
+  Neo.side.mode = data;
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<KM_V; j++) {
+      while(!Serial.available());
+      str = Serial.readStringUntil('\n');
+
+      for(k=0; k<KM_H; k++) {
+        data = hex2byte(str[k*2], str[k*2+1]);
+        SCK_KM_keyset[i][j][k] = data;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<FM_V; j++) {
+      while(!Serial.available());
+      str = Serial.readStringUntil('\n');
+
+      for(k=0; k<FM_H; k++) {
+        data = hex2byte(str[k*2], str[k*2+1]);
+        SCK_FM_keyset[i][j][k] = data;
+      }
+    }
+  }
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<PM_V; j++) {
+      while(!Serial.available());
+      str = Serial.readStringUntil('\n');
+
+      for(k=0; k<PM_H; k++) {
+        data = hex2byte(str[k*2], str[k*2+1]);
+        SCK_PM_keyset[i][j][k] = data;
+      }
+    }
+  }
+
+  for(i=0; i<KEY_LAYERS; i++) {
+    for(j=0; j<MM_V+2; j++) {
+      while(!Serial.available());
+      str = Serial.readStringUntil('\n');
+
+      for(k=0; k<MM_H; k++) {
+        data = hex2byte(str[k*2], str[k*2+1]);
+        SCK_MM_keyset[i][j][k] = data;
+      }
+    }
+  }
 
   Serial.println("[com] Key Setting ended!");
 }

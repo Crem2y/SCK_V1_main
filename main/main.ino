@@ -14,7 +14,7 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "1.0.230415.A";
+const char version_string[20] = "1.1.230423.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
