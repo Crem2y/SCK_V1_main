@@ -14,6 +14,12 @@ char* firm_ver;
 
 //////////////////////////////// functions ////////////////////////////////
 
+/**
+ * @brief printing char data to hex
+ *  
+ * @param data hex data, 0x00 ~ 0xFF
+ * @param next_line if true, add '\n'.
+ */
 void print_hex(byte data, bool next_line) {
   if(data < 16) {
     Serial.print('0');
@@ -25,7 +31,14 @@ void print_hex(byte data, bool next_line) {
   }
 }
 
-char hex2byte(char highdata, char lowdata) { // '0' ~ 'F' to 0x00 ~ 0x0F
+/**
+ * @brief change "00" ~ "FF" to 0x00 ~ 0xFF
+ * 
+ * @param highdata hex high data, '0' ~ 'F'
+ * @param lowdata hex low data, '0' ~ 'F'
+ * @return char 
+ */
+char hex2byte(char highdata, char lowdata) {
   char data = 0;
 
   if(highdata > 0x29 && highdata < 0x3A)
@@ -54,7 +67,7 @@ char hex2byte(char highdata, char lowdata) { // '0' ~ 'F' to 0x00 ~ 0x0F
 /**
  * @brief check if String is command
  * 
- * @param str String
+ * @param str command
  */
 void commandCheck(String str) {
   //Serial.print("[com] ");
@@ -84,7 +97,7 @@ void eepromSave(void) {
   byte i,j,k;
   byte data;
 
-  Serial.println("Saving to EEPROM...");
+  Serial.println(F("Saving to EEPROM..."));
 
   EEPROM.write(address, Neo.key.mode);
   address++;
@@ -132,7 +145,7 @@ void eepromSave(void) {
     }
   }
 
-  Serial.println("[com] Save complete!");
+  Serial.println(F("[com] Save complete!"));
   Serial.println("[com] "+String(address)+" of 1024 bytes used");
 }
 
@@ -144,7 +157,7 @@ void eepromLoad(void) {
   byte i,j,k;
   byte data;
   
-  Serial.println("Loading from EEPROM...");
+  Serial.println(F("Loading from EEPROM..."));
 
   Neo.key.mode = EEPROM.read(address);
   address++;
@@ -202,7 +215,7 @@ void printData(void) {
   byte i,j,k;
   byte data;
 
-  Serial.println("Printing data...");
+  Serial.println(F("Printing data..."));
 
   print_hex(Neo.key.mode, false);
   Serial.print(' ');
@@ -260,7 +273,7 @@ void printData(void) {
     Serial.println();
   }
 
-  Serial.println("[com] Print complete!");
+  Serial.println(F("[com] Print complete!"));
 }
 
 /**
@@ -271,62 +284,71 @@ void setKey(void) {
   byte data;
   String str;
 
-  Serial.println("Setting mode...");
+  Serial.println(F("Setting mode..."));
 
   while(!Serial.available());
   str = Serial.readStringUntil('\n');
 
+  Serial.println(F("Other data..."));
+
   data = hex2byte(str[0], str[1]);
   Neo.key.mode = data;
-  data = hex2byte(str[2], str[3]);
+  data = hex2byte(str[3], str[4]);
   Neo.side.mode = data;
+
+  Serial.println(F("Other data ok"));
 
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<KM_V; j++) {
+      Serial.println("Keyboard Module data ("+String(i+1)+"/"+String(KEY_LAYERS)+","+String(j+1)+"/"+String(KM_V)+")");
       while(!Serial.available());
       str = Serial.readStringUntil('\n');
-
       for(k=0; k<KM_H; k++) {
-        data = hex2byte(str[k*2], str[k*2+1]);
+        data = hex2byte(str[k*3], str[k*3+1]);
         SCK_KM_keyset[i][j][k] = data;
       }
     }
   }
+  Serial.println(F("Keyboard Module data ok"));
 
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<FM_V; j++) {
+      Serial.println("Fnkey Module data ("+String(i+1)+"/"+String(KEY_LAYERS)+","+String(j+1)+"/"+String(FM_V)+")");
       while(!Serial.available());
       str = Serial.readStringUntil('\n');
-
       for(k=0; k<FM_H; k++) {
-        data = hex2byte(str[k*2], str[k*2+1]);
+        data = hex2byte(str[k*3], str[k*3+1]);
         SCK_FM_keyset[i][j][k] = data;
       }
     }
   }
+  Serial.println(F("Fnkey Module data ok"));
+
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<PM_V; j++) {
+      Serial.println("keyPad Module data ("+String(i+1)+"/"+String(KEY_LAYERS)+","+String(j+1)+"/"+String(PM_V)+")");
       while(!Serial.available());
       str = Serial.readStringUntil('\n');
-
       for(k=0; k<PM_H; k++) {
-        data = hex2byte(str[k*2], str[k*2+1]);
+        data = hex2byte(str[k*3], str[k*3+1]);
         SCK_PM_keyset[i][j][k] = data;
       }
     }
   }
+  Serial.println(F("keyPad Module data ok"));
 
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<MM_V+2; j++) {
+      Serial.println("Macro Module data ("+String(i+1)+"/"+String(KEY_LAYERS)+","+String(j+1)+"/"+String(MM_V+2)+")");
       while(!Serial.available());
       str = Serial.readStringUntil('\n');
-
       for(k=0; k<MM_H; k++) {
-        data = hex2byte(str[k*2], str[k*2+1]);
+        data = hex2byte(str[k*3], str[k*3+1]);
         SCK_MM_keyset[i][j][k] = data;
       }
     }
   }
+  Serial.println("Macro Module data ok");
 
   Serial.println("[com] Key Setting ended!");
 }
