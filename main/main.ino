@@ -15,10 +15,11 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "1.1.230430.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
+
+struct version_t firm_version = {0x01, 0x02, {0x23, 0x04, 0x30}, 0x0B};
 
 void setup(void) {
   pinMode(KM_RS, OUTPUT); // keyboard module reset
@@ -47,8 +48,8 @@ void setup(void) {
   
   Serial.println(F("[sys] --SCK V1--"));
   Serial.print(F("[sys] firmware ver. "));
-  Serial.println(version_string);
-  firm_ver = (char *)version_string;
+  firm_ver = &firm_version;
+  print_firm_ver();
 
   BootKeyboard.begin();
   Mouse.begin();
@@ -82,7 +83,7 @@ void normal_loop(void) {
       wdt_disable();
       TIM_DISABLE;
       uart_string = Serial.readStringUntil('\n');
-      commandCheck(uart_string);
+      check_command(uart_string);
       TIM_ENABLE;
       wdt_enable(WDTO_120MS);
     }
@@ -242,6 +243,11 @@ void debug_program_mode(void) {
 
   byte i, j;
   while(true) {
+    SCK_loop();
+    if(SCK_KM_pressed[0][0]) { // if ESC key is pressing
+      debug_reset();
+    }
+
     for(i=0; i<10; i++) {
       for(j=0; j<5; j++) {
         digitalWrite(P_NL, 1);

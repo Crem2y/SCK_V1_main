@@ -219,8 +219,7 @@ void Neo_key_off(void) {
  * 
  */
 void Neo_key_lighter(void) {
-  if (Neo.key.bright < NEO_BMAX)
-  {
+  if (Neo.key.bright < NEO_BMAX) {
     Neo.key.bright++;
   }
 }
@@ -230,8 +229,7 @@ void Neo_key_lighter(void) {
  * 
  */
 void Neo_key_darker(void) {
-  if (Neo.key.bright > 0)
-  {
+  if (Neo.key.bright > 0) {
     Neo.key.bright--;
   }
 }
@@ -241,8 +239,7 @@ void Neo_key_darker(void) {
  * 
  */
 void Neo_key_rainbow_1(void) {
-  if(Neo.timer % 2 == 0)
-  {
+  if(Neo.timer % 2 == 0) {
     Neo.key.count -= 1;
   }
   uint16_t first_hue = Neo.key.count * 256;
@@ -396,8 +393,7 @@ void Neo_side_off(void) {
  * 
  */
 void Neo_side_lighter(void) {
-  if (Neo.side.bright < NEO_BMAX)
-  {
+  if (Neo.side.bright < NEO_BMAX) {
     Neo.side.bright++;
   }
 }
@@ -407,8 +403,7 @@ void Neo_side_lighter(void) {
  * 
  */
 void Neo_side_darker(void) {
-  if (Neo.side.bright > 0)
-  {
+  if (Neo.side.bright > 0) {
     Neo.side.bright--;
   }
 }
