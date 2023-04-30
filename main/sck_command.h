@@ -5,28 +5,62 @@
 #include "sck_key_datas.h"
 #include "neopixel_handle.h"
 
-void commandCheck(String str);
-void eepromSave(void);
-void eepromLoad(void);
-void printData(void);
-void setKey(void);
-char* firm_ver;
+void print_firm_ver(void);
+void print_hex(byte data, bool zero_fill, bool add_next_line);
+char hex2byte(char highdata, char lowdata);
+
+void check_command(String str);
+void save_to_eeprom(void);
+void load_from_eeprom(void);
+void print_key_data(void);
+void set_key_data(void);
+
+struct version_t
+{
+  unsigned char main;
+  unsigned char sub;
+  struct date_t
+  {
+    unsigned char year;
+    unsigned char month;
+    unsigned char day;
+  }date;
+  unsigned char code;
+};
+struct version_t* firm_ver;
 
 //////////////////////////////// functions ////////////////////////////////
+
+/**
+ * @brief print firmware version
+ * 
+ */
+void print_firm_ver(void) {
+  print_hex(firm_ver->main, false, false);
+  Serial.print('.');
+  print_hex(firm_ver->sub, false, false);
+  Serial.print('.');
+  print_hex(firm_ver->date.year, true, false);
+  print_hex(firm_ver->date.month, true, false);
+  print_hex(firm_ver->date.day, true, false);
+  Serial.print('.');
+  print_hex(firm_ver->code, false, true);
+}
 
 /**
  * @brief printing char data to hex
  *  
  * @param data hex data, 0x00 ~ 0xFF
- * @param next_line if true, add '\n'.
+ * @param zero_fill if true and data < 0x0F, add '0'
+ * @param add_next_line if true, add '\n'.
  */
-void print_hex(byte data, bool next_line) {
-  if(data < 16) {
+void print_hex(byte data, bool zero_fill, bool add_next_line) {
+  if(zero_fill && data < 16) {
     Serial.print('0');
   }
   Serial.print(data, HEX);
 
-  if(next_line) {
+  if(add_next_line) {
     Serial.println();
   }
 }
@@ -41,23 +75,19 @@ void print_hex(byte data, bool next_line) {
 char hex2byte(char highdata, char lowdata) {
   char data = 0;
 
-  if(highdata > 0x29 && highdata < 0x3A)
-  {
+  if(highdata > 0x29 && highdata < 0x3A) {
     data = (highdata - '0');
   }
-  else if(highdata > 0x40 && highdata < 0x47)
-  {
+  else if(highdata > 0x40 && highdata < 0x47) {
     data = ((highdata - 'A') + 10);
   }
 
   data = data << 4;
 
-  if(lowdata > 0x29 && lowdata < 0x3A)
-  {
+  if(lowdata > 0x29 && lowdata < 0x3A) {
     data += (lowdata - '0') & 0x0F;
   }
-  else if(lowdata > 0x40 && lowdata < 0x47)
-  {
+  else if(lowdata > 0x40 && lowdata < 0x47) {
     data += ((lowdata - 'A') + 10) & 0x0F;
   }
 
@@ -69,20 +99,20 @@ char hex2byte(char highdata, char lowdata) {
  * 
  * @param str command
  */
-void commandCheck(String str) {
+void check_command(String str) {
   //Serial.print("[com] ");
   //Serial.println(str);
 
   if(str == "SAVE") {
-    eepromSave();
+    save_to_eeprom();
   } else if(str == "LOAD") {
-    eepromLoad();
+    load_from_eeprom();
   } else if(str == "PRINT") {
-    printData();
+    print_key_data();
   } else if(str == "SETMODE") {
-    setKey();
+    set_key_data();
   } else if(str == "FIRMVER") {
-    Serial.println(firm_ver);
+    print_firm_ver();
   } else {
     if(str[0] != '\n')
       Serial.println("No command!");
@@ -92,12 +122,22 @@ void commandCheck(String str) {
 /**
  * @brief save 'keySets' data to EEPROM
  */
-void eepromSave(void) {
+void save_to_eeprom(void) {
   unsigned int address = 0;
   byte i,j,k;
   byte data;
 
-  Serial.println(F("Saving to EEPROM..."));
+  Serial.println(F("[com] Saving to EEPROM..."));
+
+  data = firm_ver->main;
+  data ^= firm_ver->sub;
+  data ^= firm_ver->date.year;
+  data ^= firm_ver->date.month;
+  data ^= firm_ver->date.day;
+  data ^= firm_ver->code;
+
+  EEPROM.write(address, data);
+  address++;
 
   EEPROM.write(address, Neo.key.mode);
   address++;
@@ -152,12 +192,31 @@ void eepromSave(void) {
 /**
  * @brief load 'keySets' data from EEPROM
  */
-void eepromLoad(void) {
+void load_from_eeprom(void) {
   unsigned int address = 0;
   byte i,j,k;
   byte data;
   
-  Serial.println(F("Loading from EEPROM..."));
+  Serial.println(F("[com] Loading from EEPROM..."));
+
+  i = firm_ver->main;
+  i ^= firm_ver->sub;
+  i ^= firm_ver->date.year;
+  i ^= firm_ver->date.month;
+  i ^= firm_ver->date.day;
+  i ^= firm_ver->code;
+
+  data = EEPROM.read(address);
+  address++;
+
+  if(data != i)
+  {
+    Serial.print(F("[com] version code not matched! load failed! "));
+    print_hex(data, true, false);
+    Serial.print("!=");
+    print_hex(i, true, true);
+    return;
+  }
 
   Neo.key.mode = EEPROM.read(address);
   address++;
@@ -211,22 +270,22 @@ void eepromLoad(void) {
 /**
  * @brief print 'keySets' data to serial
  */
-void printData(void) {
+void print_key_data(void) {
   byte i,j,k;
   byte data;
 
   Serial.println(F("Printing data..."));
 
-  print_hex(Neo.key.mode, false);
+  print_hex(Neo.key.mode, true, false);
   Serial.print(' ');
-  print_hex(Neo.side.mode, true);
+  print_hex(Neo.side.mode, true, true);
   Serial.println();
 
   for(i=0; i<KEY_LAYERS; i++) {
     for(j=0; j<KM_V; j++) {
       for(k=0; k<KM_H; k++) {
         data = SCK_KM_keyset[i][j][k];
-        print_hex(data, false);
+        print_hex(data, true, false);
         Serial.print(' ');
       }
       Serial.println();
@@ -239,7 +298,7 @@ void printData(void) {
     for(j=0; j<FM_V; j++) {
       for(k=0; k<FM_H; k++) {
         data = SCK_FM_keyset[i][j][k];
-        print_hex(data, false);
+        print_hex(data, true, false);
         Serial.print(' ');
       }
       Serial.println();
@@ -252,7 +311,7 @@ void printData(void) {
     for(j=0; j<PM_V; j++) {
       for(k=0; k<PM_H; k++) {
         data = SCK_PM_keyset[i][j][k];
-        print_hex(data, false);
+        print_hex(data, true, false);
         Serial.print(' ');
       }
       Serial.println();
@@ -265,7 +324,7 @@ void printData(void) {
     for(j=0; j<MM_V+2; j++) {
       for(k=0; k<MM_H; k++) {
         data = SCK_MM_keyset[i][j][k];
-        print_hex(data, false);
+        print_hex(data, true, false);
         Serial.print(' ');
       }
       Serial.println();
@@ -279,7 +338,7 @@ void printData(void) {
 /**
  * @brief get data from serial and save to 'keysets'
  */
-void setKey(void) {
+void set_key_data(void) {
   byte i,j,k;
   byte data;
   String str;
