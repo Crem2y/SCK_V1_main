@@ -5,8 +5,9 @@
 #include <avr/wdt.h>
 
 #include "sck_module_handle.h"
-#include "command.h"
+#include "sck_command.h"
 #include "neopixel_handle.h"
+#include "user_functions.h"
 
 #define KM_RS 18 // keyboard module reset pin
 
@@ -14,7 +15,7 @@
 #define P_CL 20 // caps lock led pin
 #define P_SL 21 // scroll lock led pin
 
-const char version_string[20] = "1.1.230423.A";
+const char version_string[20] = "1.1.230430.A";
 String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
@@ -214,41 +215,15 @@ void sleep_loop(void) {
   debug_reset();
 }
 
+//////////////////////////////// debug functions ////////////////////////////////
 
-/////////////// user function ///////////////
-void user_func_set(void) {
-  user_func[0] = uf_undo;
-  user_func[1] = uf_redo;
-}
-
-void uf_undo(void) {
-  Keyboard.press(KEY_LEFT_CTRL);
-  Keyboard.press('z');
-  Keyboard.release('z');
-  Keyboard.release(KEY_LEFT_CTRL);
-}
-
-void uf_redo(void) {
-  Keyboard.press(KEY_LEFT_CTRL);
-  Keyboard.press('y');
-  Keyboard.release('y');
-  Keyboard.release(KEY_LEFT_CTRL);
-}
-
-/////////////// led function ///////////////
-void led_func_set(void) {
-  led_func[0] = Neo_key_change;
-  led_func[1] = Neo_side_change;
-  led_func[2] = Neo_key_lighter;
-  led_func[3] = Neo_key_darker;
-  led_func[4] = Neo_side_lighter;
-  led_func[5] = Neo_side_darker;
-}
-
-/////////////// debug function ///////////////
+/**
+ * @brief load debug functions to array
+ * 
+ */
 void debug_func_set(void) {
   debug_func[0] = debug_reset;
-  debug_func[1] = debug_program;
+  debug_func[1] = debug_program_mode;
   debug_func[2] = debug_led_on;
   debug_func[3] = debug_led_off;
 }
@@ -258,28 +233,40 @@ void debug_reset(void) {
   while(1);
 }
 
-void debug_program(void) {
+void debug_program_mode(void) {
   cli();
   wdt_disable();
   I2C_writing_data[0] = 0x00;
   I2C_write_byte(I2C_GCA);
   Neo_all_off();
 
-  for(byte i=0; i<10; i++) { // 10s wait
-    digitalWrite(P_NL, 0);
-    digitalWrite(P_CL, 1);
-    digitalWrite(P_SL, 1);
-    delay(333);
-    digitalWrite(P_NL, 1);
-    digitalWrite(P_CL, 0);
-    digitalWrite(P_SL, 1);
-    delay(333);
-    digitalWrite(P_NL, 1);
-    digitalWrite(P_CL, 1);
-    digitalWrite(P_SL, 0);
-    delay(333);
+  byte i, j;
+  while(true) {
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(P_NL, 1);
+        digitalWrite(P_CL, 1);
+        digitalWrite(P_SL, 1);
+        delay(i);
+        digitalWrite(P_NL, 0);
+        digitalWrite(P_CL, 0);
+        digitalWrite(P_SL, 0);
+        delay(10-i);
+      }
+    }
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(P_NL, 1);
+        digitalWrite(P_CL, 1);
+        digitalWrite(P_SL, 1);
+        delay(10-i);
+        digitalWrite(P_NL, 0);
+        digitalWrite(P_CL, 0);
+        digitalWrite(P_SL, 0);
+        delay(i);
+      }
+    }
   }
-  debug_reset();
 }
 
 void debug_led_on(void) {

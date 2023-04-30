@@ -21,13 +21,13 @@ byte SCK_KM_keyset[KEY_LAYERS][KM_V][KM_H] = { // for Keyboard Module (FN, V, H)
    {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,FK_2,K___,0x84}},
 
   {{D_RS,K___,C_CA,C_VD,C_VU,C_VM,C_MS,C_MR,C_MP,C_MN,C_EM,C_BH,C_BB,C_BF}, // fn1 key layer
-   {D_PG,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,L_SL,L_SD,L_KD,L_KL,0xB2},
+   {D_PG,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,L_SD,L_SL,L_KD,L_KL,0xB2},
    {0xB3,'q' ,0xDA,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,L_SC,L_KC,'\\'},
    {0xC1,0xD8,0xD9,0xD7,'f' ,'g' ,'h' ,'j' ,'k' ,'l' ,';' ,'\'',K___,0xB0},
    {0x81,'z' ,'x' ,'c' ,'v' ,'b' ,'n' ,'m' ,',' ,'.' ,'/' ,K___,K___,0x85},
    {0x80,0x83,0x82,K___,K___,' ' ,K___,K___,K___,0x86,FK_1,0xD8,K___,0xD7}},
 
-  {{0xB1,K___,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,0xCB,0xCC,0xCD}, // fn2 key layer
+  {{0xB1,K___,0xC2,0xC3,0xC4,0xC5,0xC6,0xC7,0xC8,0xC9,0xCA,F_03,0xCC,0xCD}, // fn2 key layer
    {'`' ,'1' ,'2' ,'3' ,'4' ,'5' ,'6' ,'7' ,'8' ,'9' ,'0' ,'-' ,'=' ,0xB2},
    {0xB3,'q' ,'w' ,'e' ,'r' ,'t' ,'y' ,'u' ,'i' ,'o' ,'p' ,'[' ,']' ,'\\'},
    {0xC1,'a' ,'s' ,'d' ,'f' ,'g' ,'h' ,'j' ,'k' ,'l' ,';' ,'\'',K___,0xB0},
