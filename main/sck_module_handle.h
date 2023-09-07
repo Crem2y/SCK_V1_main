@@ -10,7 +10,7 @@
 unsigned char SCK_KM_address = 0x10; // 0x10 ~ 0x17
 unsigned char SCK_PM_address = 0x18; // 0x18 ~ 0x1B
 unsigned char SCK_FM_address = 0x1C; // 0x1C ~ 0x1F
-unsigned char SCK_MM_addresses[MM_H] = {0x20,0x21,0x22,0x23,0x24}; // 0x20 ~ 0x2F
+unsigned char SCK_MM_addresses[MM_H] = {0x20,0x21,0x22,0x23,0x28}; // 0x20 ~ 0x2F
 
 unsigned char SCK_KM_count = 0;
 unsigned char SCK_PM_count = 0;
@@ -230,9 +230,9 @@ void SCK_loop(void) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -250,9 +250,9 @@ void keyCheck_KM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -270,9 +270,9 @@ void keyCheck_PM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -290,9 +290,9 @@ void keyCheck_FM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
  * @param module_num byte, 0 ~ MM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -326,7 +326,7 @@ void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
 }
 
 /**
- * @brief chack and toggle key
+ * @brief check and toggle key
  * 
  * @param key_state byte, if not 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
