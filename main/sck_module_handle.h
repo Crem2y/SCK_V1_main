@@ -4,7 +4,8 @@
 
 #include "i2c_master_interrupt.h"
 #include "sck_key_handle.h"
-#include "sck_key_datas.h"
+#include "sck_key_define.h"
+#include "user_datas/key_data.h"
 #include "macro_timer.h"
 
 unsigned char SCK_KM_address = 0x10; // 0x10 ~ 0x17
