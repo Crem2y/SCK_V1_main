@@ -19,7 +19,7 @@ String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
 
-struct version_t firm_version = {0x01, 0x02, {0x23, 0x04, 0x30}, 0x0B};
+struct version_t firm_version = {0x01, 0x02, {0x23, 0x09, 0x07}, 0x0A};
 
 void setup(void) {
   pinMode(KM_RS, OUTPUT); // keyboard module reset

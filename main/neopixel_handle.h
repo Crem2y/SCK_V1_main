@@ -5,6 +5,7 @@
 
 #include "i2c_master_interrupt.h"
 #include "sck_functiuon_set.h"
+#include "sck_key_datas.h"
 
 #define NEO_PIN  9  // neopixel data pin
 #define NEO_KEY  74 // number of neopixels (key)
@@ -12,22 +13,22 @@
 #define NEO_NUM  NEO_KEY + NEO_SIDE // number of neopixels
 #define NEO_BMAX 15 // LED max bright (default)
 
-#define NEO_MODE_KEY_MAX  4 // neopixel modes (key)
-#define NEO_MODE_SIDE_MAX 4 // neopixel modes (side)
-
-#define NEO_MODE_NONE       0 // neopixel off
-#define NEO_MODE_RAINBOW_1  1 // neopixel rainbow mode (1)
-#define NEO_MODE_RAINBOW_2  2 // neopixel rainbow mode (2)
-#define NEO_MODE_FIXED_COL  3 // neopixel fixed color mode (one color)
-#define NEO_MODE_FIXED_CUS  4 // neopixel fixed color mode (custom)
-#define NEO_MODE_WHITE      5 // neopixel white color mode (fixed)
-#define NEO_MODE_MAX        6 // neopixel modes
+enum neo_mode {
+  NEO_MODE_NONE = 0,  // neopixel off
+  NEO_MODE_RAINBOW_1, // neopixel rainbow mode (1)
+  NEO_MODE_RAINBOW_2, // neopixel rainbow mode (2)
+  NEO_MODE_FIXED_COL, // neopixel fixed color mode (one color)
+  NEO_MODE_FIXED_CUS, // neopixel fixed color mode (custom)
+  NEO_MODE_WHITE,     // neopixel white color mode (fixed)
+  NEO_MODE_REACTION,  // neopixel reaction mode
+  NEO_MODE_MAX,       //
+};
 
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
-unsigned short Neo_colors_fixed[2] = {0xFFF0, 0xF000}; // key, side
+unsigned short Neo_colors_fixed[2] = {0xF000, 0xF000}; // key, side
 
 unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
   0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
@@ -49,6 +50,7 @@ unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
 
 struct _neo_value {
   byte count;
+  byte count2;
   byte mode;
   byte bright;
 };
@@ -74,6 +76,7 @@ void Neo_key_rainbow_1(void);
 void Neo_key_rainbow_2(void);
 void Neo_key_fixed_color(void);
 void Neo_key_fixed_custom(void);
+void Neo_key_reaction(void);
 void Neo_key_white(void);
 
 void Neo_side_change(void);
@@ -84,6 +87,7 @@ void Neo_side_rainbow_1(void);
 void Neo_side_rainbow_2(void);
 void Neo_side_fixed_color(void);
 void Neo_side_fixed_custom(void);
+void Neo_side_reaction(void);
 void Neo_side_white(void);
 
 //////////////////////////////// functions ////////////////////////////////
@@ -109,7 +113,7 @@ void led_func_set(void) {
  */
 void Neo_init(void) {
   neopixel.begin();
-  Neo.key.bright = NEO_BMAX;
+  Neo.key.bright = 1;
   Neo.side.bright = NEO_BMAX;
 }
 
@@ -137,6 +141,9 @@ void Neo_loop(void) {
     case NEO_MODE_WHITE:
       Neo_key_white();
     break;
+    case NEO_MODE_REACTION:
+      Neo_key_reaction();
+    break;
     default:
       Neo_key_off();
     break;
@@ -160,6 +167,9 @@ void Neo_loop(void) {
     break;
     case NEO_MODE_WHITE:
       Neo_side_white();
+    break;
+    case NEO_MODE_REACTION:
+      Neo_side_reaction();
     break;
     default:
       Neo_side_off();
@@ -190,7 +200,7 @@ void Neo_boot(void) {
     delay(10);
   }
 
-  Neo.key.mode = NEO_MODE_FIXED_COL;
+  Neo.key.mode = NEO_MODE_WHITE;
   Neo.side.mode = NEO_MODE_NONE;
 }
 
@@ -368,6 +378,42 @@ void Neo_key_white(void) {
   }
 }
 
+/**
+ * @brief LED reaction mode (key)
+ * 
+ */
+void Neo_key_reaction(void) {
+  bool any_key_pressed = false;
+  if(Neo.key.count2 > 0) {
+    Neo.key.count2--;
+  }
+  if(Neo.key.count2 == 0) { 
+    Neo.key.count2 = 2;
+    if(Neo.key.count > 0) {
+      Neo.key.count--;
+    }
+  }
+
+  for(unsigned char i=0; i<KM_V; i++) {
+    for(unsigned char j=0; j<KM_H; j++) {
+      if(SCK_KM_pressed[i][j]) {
+        any_key_pressed = true;
+        break;
+      }
+    }
+    if(any_key_pressed) break;
+  }
+
+  if(any_key_pressed) {
+    Neo.key.count = 15;
+  }
+
+  for(unsigned char i=0; i<NEO_KEY; i++) {
+    neopixel.setPixelColor(i, Neo.key.count, Neo.key.count, Neo.key.count);
+  }
+}
+
+
 /////////////// neopixel (side) ///////////////
 
 /**
@@ -469,5 +515,40 @@ void Neo_side_fixed_custom(void) {
 void Neo_side_white(void) {
   for(unsigned char i=0; i<NEO_SIDE; i++) {
     neopixel.setPixelColor(i+NEO_KEY, Neo.side.bright, Neo.side.bright, Neo.side.bright);
+  }
+}
+
+/**
+ * @brief LED reaction mode (side)
+ * 
+ */
+void Neo_side_reaction(void) {
+  bool any_key_pressed = false;
+  if(Neo.side.count2 > 0) {
+    Neo.side.count2--;
+  }
+  if(Neo.side.count2 == 0) { 
+    Neo.side.count2 = 2;
+    if(Neo.side.count > 0) {
+      Neo.side.count--;
+    }
+  }
+
+  for(unsigned char i=0; i<KM_V; i++) {
+    for(unsigned char j=0; j<KM_H; j++) {
+      if(SCK_KM_pressed[i][j]) {
+        any_key_pressed = true;
+        break;
+      }
+    }
+    if(any_key_pressed) break;
+  }
+
+  if(any_key_pressed) {
+    Neo.side.count = 15;
+  }
+
+  for(unsigned char i=0; i<NEO_SIDE; i++) {
+    neopixel.setPixelColor(i+NEO_KEY, Neo.side.count, Neo.side.count, Neo.side.count);
   }
 }
