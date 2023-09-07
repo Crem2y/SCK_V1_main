@@ -70,6 +70,40 @@ void setup(void) {
   wdt_reset();
 }
 
+void module_led_fixed(void) {
+  uint32_t col_temp[6] = { // 0x00RRGGBB
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+  };
+
+  for(byte i=0; i<6; i++) {
+    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+  }
+}
+
+void module_led_auto(void) {
+  uint32_t col_temp[6];
+
+  col_temp[0] = neopixel.getPixelColor(0);
+  col_temp[1] = neopixel.getPixelColor(26);
+  col_temp[2] = neopixel.getPixelColor(27);
+  col_temp[3] = neopixel.getPixelColor(53);
+  col_temp[4] = neopixel.getPixelColor(54);
+  col_temp[5] = neopixel.getPixelColor(73);
+
+  for(byte i=0; i<6; i++) {
+    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+  }
+}
+
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
   normal_loop();
@@ -98,33 +132,15 @@ void normal_loop(void) {
     Neo_loop();
     TIM_ENABLE;
 
+    // send data to module
     // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
     I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
-    //I2C_write_byte(I2C_GCA);
+    // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
+    module_led_auto();
+    I2C_write_data(I2C_GCA, 1+18);
 
-    if(false) {
-      I2C_writing_data[1] = 0x00;
-      I2C_write_data(I2C_GCA, 2);
-    } else {
-      // 0xRG, 0xBW
-      uint32_t col_temp[6];
-      col_temp[0] = neopixel.getPixelColor(0);
-      col_temp[1] = neopixel.getPixelColor(26);
-      col_temp[2] = neopixel.getPixelColor(27);
-      col_temp[3] = neopixel.getPixelColor(53);
-      col_temp[4] = neopixel.getPixelColor(54);
-      col_temp[5] = neopixel.getPixelColor(73);
-
-      for(byte i=0; i<6; i++) {
-        I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
-        I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
-        I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
-      }
-
-      I2C_write_data(I2C_GCA, 1+18);
-    }
-
-    if(!(SCK_lock_key & 0x07)) { // if all leds are off
+     // if all leds are off, check time
+    if(!(SCK_lock_key & 0x07)) {
       byte i, j;
       byte k = 0;
 
@@ -276,11 +292,13 @@ void debug_program_mode(void) {
 }
 
 void debug_led_on(void) {
-  Neo.key.mode = NEO_MODE_RAINBOW_1;
+  Neo.key.mode = neo_key_start;
+  Neo.side.mode = neo_side_start;
   SCK_led_power = true;
 }
 
 void debug_led_off(void) {
   Neo.key.mode = NEO_MODE_NONE;
+  Neo.side.mode = NEO_MODE_NONE;
   SCK_led_power = false;
 }
