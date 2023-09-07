@@ -5,61 +5,15 @@
 
 #include "i2c_master_interrupt.h"
 #include "sck_functiuon_set.h"
-#include "sck_key_datas.h"
-
-#define NEO_PIN  9  // neopixel data pin
-#define NEO_KEY  74 // number of neopixels (key)
-#define NEO_SIDE 16 // number of neopixels (side)
-#define NEO_NUM  NEO_KEY + NEO_SIDE // number of neopixels
-#define NEO_BMAX 15 // LED max bright (default)
-
-enum neo_mode {
-  NEO_MODE_NONE = 0,  // neopixel off
-  NEO_MODE_RAINBOW_1, // neopixel rainbow mode (1)
-  NEO_MODE_RAINBOW_2, // neopixel rainbow mode (2)
-  NEO_MODE_FIXED_COL, // neopixel fixed color mode (one color)
-  NEO_MODE_FIXED_CUS, // neopixel fixed color mode (custom)
-  NEO_MODE_WHITE,     // neopixel white color mode (fixed)
-  NEO_MODE_REACTION,  // neopixel reaction mode
-  NEO_MODE_MAX,       //
-};
+#include "sck_key_define.h"
+#include "neopixel_define.h"
+#include "user_datas/led_data.h"
 
 Adafruit_NeoPixel neopixel = Adafruit_NeoPixel(NEO_NUM, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 unsigned short Neo_colors[NEO_KEY+NEO_SIDE] = {0,}; // 0xRGBW
 
-unsigned short Neo_colors_fixed[2] = {0xF000, 0xF000}; // key, side
 
-unsigned short Neo_colors_custom[NEO_KEY+NEO_SIDE] = {
-  0xFFF0,         0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
-
-  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,    0xFFF0, 
-
-    0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,   0xFFF0,
-
-      0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,     0xFFF0, 
-
-        0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,       0xFFF0,
-
-  0xFFF0,   0xFFF0,   0xFFF0,                   0xFFF0,                             0xFFF0,   0xFFF0,   0xFFF0,   0xFFF0, 
-
-  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
-  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0,
-  0xFFF0, 0xFFF0, 0xFFF0, 0xFFF0
-}; // 0xRGBW
-
-struct _neo_value {
-  byte count;
-  byte count2;
-  byte mode;
-  byte bright;
-};
-
-struct _neo {
-  byte timer;
-  struct _neo_value key;
-  struct _neo_value side;
-} Neo;
 
 void led_func_set(void);
 
@@ -200,8 +154,8 @@ void Neo_boot(void) {
     delay(10);
   }
 
-  Neo.key.mode = NEO_MODE_WHITE;
-  Neo.side.mode = NEO_MODE_NONE;
+  Neo.key.mode = neo_key_start;
+  Neo.side.mode = neo_side_start;
 }
 
 /////////////// neopixel (key) ///////////////

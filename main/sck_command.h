@@ -2,7 +2,8 @@
 
 #include <EEPROM.h> // ATmega32U4 has 1024 bytes
 
-#include "sck_key_datas.h"
+#include "sck_key_define.h"
+#include "user_datas/key_data.h"
 #include "neopixel_handle.h"
 
 void print_firm_ver(void);
