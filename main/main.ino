@@ -19,7 +19,7 @@ String uart_string = "";
 unsigned short sleep_count = 0;
 bool is_sleep_mode = false;
 
-struct version_t firm_version = {0x01, 0x02, {0x23, 0x09, 0x07}, 0x0A};
+struct version_t firm_version = {0x01, 0x02, {0x23, 0x09, 0x08}, 0x0A};
 
 void setup(void) {
   pinMode(KM_RS, OUTPUT); // keyboard module reset
@@ -132,6 +132,9 @@ void normal_loop(void) {
     Neo_loop();
     TIM_ENABLE;
 
+    if(Neo.module == NEO_MODULE_OFF) SCK_led_power == false;
+    else SCK_led_power == true;
+
     // send data to module
     // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
     I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
@@ -139,7 +142,7 @@ void normal_loop(void) {
     module_led_auto();
     I2C_write_data(I2C_GCA, 1+18);
 
-     // if all leds are off, check time
+    // if all leds are off, check time for sleep mode
     if(!(SCK_lock_key & 0x07)) {
       byte i, j;
       byte k = 0;
