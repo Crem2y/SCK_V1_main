@@ -168,7 +168,7 @@ void Neo_boot(void) {
   for(byte j=0; j<NEO_KEY+NEO_SIDE; j++) {
     neopixel.setPixelColor(j, 15, 15, 15);
     neopixel.show();
-    delay(10);
+    delay(1);
   }
 
   Neo.key.mode = neo_key_start;
