@@ -1,8 +1,9 @@
 #pragma once
-
 #include <HID-Project.h>
+#include <avr/wdt.h>
 
 #include "sck_key_code.h"
+#include "sck_functiuon_set.h"
 
 // limit values
 #define MS_MAX 120 // mouseSpeed max value (~ 127)
@@ -26,47 +27,15 @@ unsigned short repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 
 unsigned char SCK_key_layer = 0;
 
-void SCK_func_none(void);
-void (*led_func[6])(void);
-void SCK_led_func_init(void);
-void (*user_func[40])(void);
-void SCK_user_func_init(void);
-
 void SCK_keyHandle(unsigned char keycode, bool pressed);
 
 void SCK_code_Normal(byte keycode, bool pressed);
 void SCK_code_Function(byte keycode, bool pressed);
 void SCK_code_Consumer(byte keycode, bool pressed);
 void SCK_code_Surface(byte keycode, bool pressed);
+void SCK_code_Debug(byte keycode, bool pressed);
 
 //////////////////////////////// functions ////////////////////////////////
-
-/**
- * @brief a function that does nothing
- * 
- */
-void SCK_func_none(void) {
-}
-
-/**
- * @brief initalize led functions
- * 
- */
-void SCK_led_func_init(void) {
-  for(byte i=0; i<6; i++) {
-    led_func[i] = SCK_func_none;
-  }
-}
-
-/**
- * @brief initalize user functions
- * 
- */
-void SCK_user_func_init(void) {
-  for(byte i=0; i<40; i++) {
-    user_func[i] = SCK_func_none;
-  }
-}
 
 /**
  * @brief check keycode and execute correct function
@@ -83,6 +52,8 @@ void SCK_keyHandle(unsigned char keycode, bool pressed) {
     SCK_code_Consumer(keycode, pressed);
   } else if (keycode > 0xEB && keycode < 0xF0) {
     SCK_code_Surface(keycode, pressed);
+  } else if (keycode > 0xFB) {
+    SCK_code_Debug(keycode, pressed);
   } else {
     if (pressed) Keyboard.press(keycode);
     else Keyboard.release(keycode);
@@ -220,9 +191,12 @@ void SCK_code_Normal(byte keycode, bool pressed) {
  * @param pressed bool, if true, key is pressed
  */
 void SCK_code_Function(byte keycode, bool pressed) {
+  wdt_disable();
   if (pressed) {
     user_func[keycode - 0x88](); // execute function
   }
+  wdt_enable(WDTO_120MS);
+  wdt_reset();
 }
 
 /**
@@ -322,5 +296,17 @@ void SCK_code_Surface(byte keycode, bool pressed) {
     if(keycode == S_B) {
       SurfaceDial.release();
     }
+  }
+}
+
+/**
+ * @brief special keycode for debug
+ * 
+ * @param keycode unsigned char, 0xFC ~ 0xFF (4)
+ * @param pressed bool, if true, key is pressed
+ */
+void SCK_code_Debug(byte keycode, bool pressed) {
+  if (pressed) {
+    debug_func[keycode - 0xFC](); // execute function
   }
 }

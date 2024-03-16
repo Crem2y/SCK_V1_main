@@ -1,5 +1,6 @@
-arduino/
 .vscode/
+arduino/
+main/user_datas/
 *.backup
 *.bak
 *.code-workspace

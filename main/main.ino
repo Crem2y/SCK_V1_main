@@ -2,108 +2,324 @@
 #include <HID-Project.h>
 #include <Adafruit_NeoPixel.h>
 #include <avr/power.h>
+#include <avr/wdt.h>
 
 #include "sck_module_handle.h"
-#include "command.h"
+#include "sck_command.h"
 #include "neopixel_handle.h"
+#include "user_datas/user_functions.h"
 
-#define P_NL 15 // num lock led pin
-#define P_CL 16 // caps lock led pin
-#define P_SL 17 // scroll lock led pin
+#define KM_RS 18 // keyboard module reset pin
 
-String uartString = "";
+#define P_NL 19 // num lock led pin
+#define P_CL 20 // caps lock led pin
+#define P_SL 21 // scroll lock led pin
+
+String uart_string = "";
+unsigned short sleep_count = 0;
+bool is_sleep_mode = false;
+
+#define YEAR ((__DATE__ [9] - '0') * 10 + (__DATE__ [10] - '0'))
+
+#define MONTH (__DATE__ [2] == 'n' ? 1 \
+: __DATE__ [2] == 'b' ? 2 \
+: __DATE__ [2] == 'r' ? (__DATE__ [0] == 'M' ? 3 : 4) \
+: __DATE__ [2] == 'y' ? 5 \
+: __DATE__ [2] == 'n' ? 6 \
+: __DATE__ [2] == 'l' ? 7 \
+: __DATE__ [2] == 'g' ? 8 \
+: __DATE__ [2] == 'p' ? 9 \
+: __DATE__ [2] == 't' ? 10 \
+: __DATE__ [2] == 'v' ? 11 : 12)
+
+#define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
++ (__DATE__ [5] - '0'))
+
+#define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
+
+struct version_t firm_version = {0x01, 0x03, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, 0x0A};
 
 void setup(void) {
-  byte i;
+  pinMode(KM_RS, OUTPUT); // keyboard module reset
+  digitalWrite(KM_RS, HIGH);
 
-  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(P_NL, OUTPUT);
   pinMode(P_CL, OUTPUT);
   pinMode(P_SL, OUTPUT);
 
+  digitalWrite(P_NL, HIGH);
+  digitalWrite(P_CL, HIGH);
+  digitalWrite(P_SL, HIGH);
+
   Serial.begin(115200);
-  delay(3000);
+
+  delay(200); // power stabilization time & led check
+  digitalWrite(P_NL, LOW);
+  delay(200);
+  digitalWrite(P_CL, LOW);
+  delay(200);
+  digitalWrite(P_SL, LOW);
+  delay(200);
+
+  Neo_init();
+  Neo_boot();
   
   Serial.println(F("[sys] --SCK V1--"));
-  Serial.println(F("[sys] firmware ver. 0.4.230130"));
+  Serial.print(F("[sys] firmware ver. "));
+  firm_ver = &firm_version;
+  print_firm_ver();
 
   BootKeyboard.begin();
   Mouse.begin();
   SurfaceDial.begin();
 
-  Neo_init();
-
-  /*
-  Serial.print(F("[sys] waiting 3 seconds"));
-  for(i=0; i<3; i++) {
-    Serial.print('.');
-    delay(1000);
-  }
-  Serial.println("done!");
-  */
-
-  Neo_boot();
-
   SCK_init();
+
+  if(SCK_KM_count == 0) {
+    delay(3000);
+    debug_reset();
+  }
 
   led_func_set();
   user_func_set();
+  debug_func_set();
+
+  wdt_enable(WDTO_120MS);
+  wdt_reset();
 }
 
-//////////////////////////////// main loop ////////////////////////////////
+void module_led_fixed(void) {
+  uint32_t col_temp[6] = { // 0x00RRGGBB
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+    0x00FFFFFF,
+  };
+
+  for(byte i=0; i<6; i++) {
+    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+  }
+}
+
+void module_led_auto(void) {
+  uint32_t col_temp[6];
+
+  col_temp[0] = neopixel.getPixelColor(0);
+  col_temp[1] = neopixel.getPixelColor(26);
+  col_temp[2] = neopixel.getPixelColor(27);
+  col_temp[3] = neopixel.getPixelColor(53);
+  col_temp[4] = neopixel.getPixelColor(54);
+  col_temp[5] = neopixel.getPixelColor(73);
+
+  for(byte i=0; i<6; i++) {
+    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+  }
+}
+
+//////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
-  digitalWrite(LED_BUILTIN, HIGH);
-  
-  while(Serial.available()) { //데이터가 오면
+  normal_loop();
+  if(is_sleep_mode)
+    sleep_loop();
+}
+
+void normal_loop(void) {
+  while(true) {
+    while(Serial.available()) {
+      wdt_disable();
+      TIM_DISABLE;
+      uart_string = Serial.readStringUntil('\n');
+      check_command(uart_string);
+      TIM_ENABLE;
+      wdt_enable(WDTO_120MS);
+    }
+    SCK_loop();
+
+    // lock led
+    digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
+    digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
+    digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
+
     TIM_DISABLE;
-    uartString = Serial.readStringUntil('\n');
-    commandCheck(uartString);
-    TIM_ENABLE;
-  }
-
-  SCK_loop();
-
-  // lock led
-  digitalWrite(P_NL, SCK_lock_key & LED_NUM_LOCK);
-  digitalWrite(P_CL, SCK_lock_key & LED_CAPS_LOCK);
-  digitalWrite(P_SL, SCK_lock_key & LED_SCROLL_LOCK);
-
-  if(SCK_led_power) {
     Neo_loop();
-  } else {
-    Neo_all_off();
+    TIM_ENABLE;
+
+    if(Neo.module == NEO_MODULE_OFF) SCK_led_power == false;
+    else SCK_led_power == true;
+
+    // send data to module
+    // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
+    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+    // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
+    module_led_auto();
+    I2C_write_data(I2C_GCA, 1+18);
+
+    // if all leds are off, check time for sleep mode
+    if(!(SCK_lock_key & 0x07)) {
+      byte i, j;
+      byte k = 0;
+
+      for(i=0; i<KM_V; i++) {
+        for(j=0; j<KM_H; j++) {
+          if(SCK_KM_pressed[i][j]) {
+            k++;
+            break;
+          }
+        }
+      }
+      if(k == 0) {
+        sleep_count++;
+        if(sleep_count > 6000) { // 200 = 1s
+          sleep_count = 0;
+          is_sleep_mode = true;
+          return;
+        }
+      } else {
+        sleep_count = 0;
+      }
+    }
+    wdt_reset();
+    delay(1);
   }
-
-  delay(1);
+  return;
 }
 
-/////////////// user function ///////////////
-void user_func_set(void) {
-  user_func[0] = uf_undo;
-  user_func[1] = uf_redo;
+void sleep_loop(void) {
+  TIM_DISABLE;
+  Neo.key.mode  = NEO_MODE_NONE;
+  Neo.side.mode = NEO_MODE_NONE;
+  SCK_led_power = false;
+  Neo_loop();
+  SCK_loop();
+  I2C_writing_data[1] = 0x00;
+  I2C_write_data(I2C_GCA, 2);
+
+  while(is_sleep_mode) {
+    SCK_loop();
+
+    if(SCK_lock_key & 0x07) {
+      break;
+    }
+    
+    byte i, j;
+    byte k = 0;
+
+    for(i=0; i<KM_V; i++) {
+      for(j=0; j<KM_H; j++) {
+        if(SCK_KM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(i=0; i<FM_V; i++) {
+      for(j=0; j<FM_H; j++) {
+        if(SCK_FM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(i=0; i<PM_V; i++) {
+      for(j=0; j<PM_H; j++) {
+        if(SCK_PM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    for(i=0; i<MM_V; i++) {
+      for(j=0; j<MM_H; j++) {
+        if(SCK_MM_pressed[i][j]) {
+          k++;
+          break;
+        }
+      }
+    }
+    if(k) {
+      break;
+    }
+    wdt_reset();
+    delay(10);
+  }
+  SCK_loop();
+  Keyboard.releaseAll();
+  debug_reset();
 }
 
-void uf_undo(void) {
-  Keyboard.press(KEY_LEFT_CTRL);
-  Keyboard.press('z');
-  Keyboard.release('z');
-  Keyboard.release(KEY_LEFT_CTRL);
+//////////////////////////////// debug functions ////////////////////////////////
+
+/**
+ * @brief load debug functions to array
+ * 
+ */
+void debug_func_set(void) {
+  debug_func[0] = debug_reset;
+  debug_func[1] = debug_program_mode;
+  debug_func[2] = debug_led_on;
+  debug_func[3] = debug_led_off;
 }
 
-void uf_redo(void) {
-  Keyboard.press(KEY_LEFT_CTRL);
-  Keyboard.press('y');
-  Keyboard.release('y');
-  Keyboard.release(KEY_LEFT_CTRL);
+void debug_reset(void) {
+  wdt_enable(WDTO_15MS);
+  while(1);
 }
 
+void debug_program_mode(void) {
+  cli();
+  wdt_disable();
+  I2C_writing_data[0] = 0x00;
+  I2C_write_byte(I2C_GCA);
+  Neo_all_off();
 
-/////////////// led function ///////////////
-void led_func_set(void) {
-  led_func[0] = Neo_key_change;
-  led_func[1] = Neo_side_change;
-  led_func[2] = Neo_key_lighter;
-  led_func[3] = Neo_key_darker;
-  led_func[4] = Neo_side_lighter;
-  led_func[5] = Neo_side_darker;
+  byte i, j;
+  while(true) {
+    SCK_loop();
+    if(SCK_KM_pressed[0][0]) { // if ESC key is pressing
+      debug_reset();
+    }
+
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(P_NL, 1);
+        digitalWrite(P_CL, 1);
+        digitalWrite(P_SL, 1);
+        delay(i);
+        digitalWrite(P_NL, 0);
+        digitalWrite(P_CL, 0);
+        digitalWrite(P_SL, 0);
+        delay(10-i);
+      }
+    }
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(P_NL, 1);
+        digitalWrite(P_CL, 1);
+        digitalWrite(P_SL, 1);
+        delay(10-i);
+        digitalWrite(P_NL, 0);
+        digitalWrite(P_CL, 0);
+        digitalWrite(P_SL, 0);
+        delay(i);
+      }
+    }
+  }
+}
+
+void debug_led_on(void) {
+  Neo.key.mode = neo_key_start;
+  Neo.side.mode = neo_side_start;
+  SCK_led_power = true;
+}
+
+void debug_led_off(void) {
+  Neo.key.mode = NEO_MODE_NONE;
+  Neo.side.mode = NEO_MODE_NONE;
+  SCK_led_power = false;
 }
