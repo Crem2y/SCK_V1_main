@@ -4,20 +4,21 @@
 
 #include "i2c_master_interrupt.h"
 #include "sck_key_handle.h"
-#include "sck_key_datas.h"
+#include "sck_key_define.h"
+#include "user_datas/key_data.h"
 #include "macro_timer.h"
 
 unsigned char SCK_KM_address = 0x10; // 0x10 ~ 0x17
 unsigned char SCK_PM_address = 0x18; // 0x18 ~ 0x1B
 unsigned char SCK_FM_address = 0x1C; // 0x1C ~ 0x1F
-unsigned char SCK_MM_addresses[MM_H] = {0x20,0x21,0x22,0x23,0x24}; // 0x20 ~ 0x2F
+unsigned char SCK_MM_addresses[MM_H] = {0x20,0x21,0x22,0x23,0x28}; // 0x20 ~ 0x2F
 
 unsigned char SCK_KM_count = 0;
 unsigned char SCK_PM_count = 0;
 unsigned char SCK_FM_count = 0;
 unsigned char SCK_MM_count = 0;
 
-bool SCK_led_power = false;
+bool SCK_led_power = true;
 byte SCK_lock_key;
 
 volatile unsigned short msCount = 0; // timer count
@@ -119,10 +120,8 @@ void SCK_init(void) {
   Serial.print(F("[SCK] macro modules : "));
   Serial.println(SCK_MM_count);
 
-  if(SCK_KM_count == 0 && SCK_PM_count == 0 && SCK_FM_count == 0 && SCK_MM_count == 0) {
-    Serial.println(F("[SCK] no module detected!"));
-    Serial.println(F("[SCK] Please disconnect the cable."));
-    while(1);
+  if(SCK_KM_count == 0) {
+    Serial.println(F("[SCK] keyboard module error!"));
   }
 
   Serial.print(F("\n[SCK] default mouseSpeed  : "));
@@ -148,6 +147,8 @@ void SCK_loop(void) {
   byte key_mask;
   byte key_state;
 
+  I2C_wait();
+
   // getting key
   if(SCK_KM_count) { // if there is keyboard modules
     I2C_read_data(SCK_KM_address, KM_H);
@@ -162,6 +163,7 @@ void SCK_loop(void) {
         }
       }
     }
+    
   }
 
   if(SCK_FM_count) { // if there is fnkey modules
@@ -180,7 +182,7 @@ void SCK_loop(void) {
   }
   
   if(SCK_PM_count) { // if there is keypad modules
-    I2C_read_data(SCK_PM_address, PM_V);
+    I2C_read_data(SCK_PM_address, PM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
       for(i=0; i<PM_H; i++) {
@@ -224,15 +226,14 @@ void SCK_loop(void) {
   SCK_lock_key = BootKeyboard.getLeds(); // lock key checking
 
   // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
-  i = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
-  I2C_writing_data[0] = i;
-  I2C_write_byte(I2C_GCA);
+    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  //I2C_write_byte(I2C_GCA);
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -250,9 +251,9 @@ void keyCheck_KM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -270,9 +271,9 @@ void keyCheck_PM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ FM_V
  * @param keyposH byte, 0 ~ FM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -290,9 +291,9 @@ void keyCheck_FM(byte key_state, byte keyposV, byte keyposH, byte key_layer) {
 }
 
 /**
- * @brief chack and press a key once
+ * @brief check and press a key once
  * 
- * @param key byte, if 0, key is pressed
+ * @param key_state byte, if 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V
  * @param module_num byte, 0 ~ MM_H
  * @param key_layer byte, 0 ~ KEY_LAYERS
@@ -326,7 +327,7 @@ void keyRepeat_MM(byte key_state, byte keyposV, byte module_num, byte key_layer)
 }
 
 /**
- * @brief chack and toggle key
+ * @brief check and toggle key
  * 
  * @param key_state byte, if not 0, key is pressed
  * @param keyposV byte, 0 ~ MM_V

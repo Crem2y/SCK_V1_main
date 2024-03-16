@@ -20,6 +20,7 @@ volatile unsigned char I2C_err_count = 0;          // I2C error count
 bool I2C_init(void);
 bool I2C_deinit(void);
 bool I2C_data_clear(void);
+bool I2C_wait(void);
 bool I2C_check(unsigned char address);
 bool I2C_read_byte(unsigned char address);
 bool I2C_read_data(unsigned char address, unsigned char length);
@@ -169,6 +170,14 @@ bool I2C_data_clear(void) {
     I2C_writing_data[i] = 0;
   }
 
+  return true;
+}
+
+/**
+ * @brief wait until communication end.
+ */
+bool I2C_wait(void) {
+  while(I2C_is_communicating);
   return true;
 }
 
