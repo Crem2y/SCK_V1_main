@@ -11,5 +11,4 @@ Arduino IDE
 ***
 
 ## Arduino board
-
 Arduino pro micro (ATmega32U4, 5V, 16MHz)
