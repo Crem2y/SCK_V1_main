@@ -21,23 +21,23 @@ bool is_sleep_mode = false;
 
 #define YEAR ((__DATE__ [9] - '0') * 10 + (__DATE__ [10] - '0'))
 
-#define MONTH (__DATE__ [2] == 'n' ? 0 \
-: __DATE__ [2] == 'b' ? 1 \
-: __DATE__ [2] == 'r' ? (__DATE__ [0] == 'M' ? 2 : 3) \
-: __DATE__ [2] == 'y' ? 4 \
-: __DATE__ [2] == 'n' ? 5 \
-: __DATE__ [2] == 'l' ? 6 \
-: __DATE__ [2] == 'g' ? 7 \
-: __DATE__ [2] == 'p' ? 8 \
-: __DATE__ [2] == 't' ? 9 \
-: __DATE__ [2] == 'v' ? 10 : 11)
+#define MONTH (__DATE__ [2] == 'n' ? 1 \
+: __DATE__ [2] == 'b' ? 2 \
+: __DATE__ [2] == 'r' ? (__DATE__ [0] == 'M' ? 3 : 4) \
+: __DATE__ [2] == 'y' ? 5 \
+: __DATE__ [2] == 'n' ? 6 \
+: __DATE__ [2] == 'l' ? 7 \
+: __DATE__ [2] == 'g' ? 8 \
+: __DATE__ [2] == 'p' ? 9 \
+: __DATE__ [2] == 't' ? 10 \
+: __DATE__ [2] == 'v' ? 11 : 12)
 
 #define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
 + (__DATE__ [5] - '0'))
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x02, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, 0x0A};
+struct version_t firm_version = {0x01, 0x03, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, 0x0A};
 
 void setup(void) {
   pinMode(KM_RS, OUTPUT); // keyboard module reset
