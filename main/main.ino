@@ -11,7 +11,7 @@
 
 #define MODULE_MASTER 0
 #define MODULE_SUB    1
-#define MODULE_CONFIG MODULE_SUB
+#define MODULE_CONFIG MODULE_MASTER
 
 #if MODULE_CONFIG == MODULE_MASTER
   #define KM_RS 18 // keyboard module reset pin
@@ -51,6 +51,7 @@ bool is_sleep_mode = false;
 struct version_t firm_version = {0x01, 0x03, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
+  pinMode(LED_BUILTIN, OUTPUT);
 #if MODULE_CONFIG == MODULE_MASTER
   pinMode(KM_RS, OUTPUT); // keyboard module reset
   digitalWrite(KM_RS, HIGH);
@@ -63,13 +64,13 @@ void setup(void) {
   digitalWrite(P_CL, HIGH);
   digitalWrite(P_SL, HIGH);
 #elif MODULE_CONFIG == MODULE_SUB
-  pinMode(LED_BUILTIN, OUTPUT);
   pinMode(SM_RS, INPUT_PULLUP);
   pinMode(SM_PM, INPUT_PULLUP);
 #endif
 
   Serial.begin(115200);
 
+  digitalWrite(LED_BUILTIN, HIGH);
 #if MODULE_CONFIG == MODULE_MASTER
   delay(200); // power stabilization time & led check
   digitalWrite(P_NL, LOW);
@@ -78,8 +79,6 @@ void setup(void) {
   delay(200);
   digitalWrite(P_SL, LOW);
   delay(200);
-#elif MODULE_CONFIG == MODULE_SUB
-  digitalWrite(LED_BUILTIN, HIGH);
 #endif
 
   Neo_init();
@@ -147,8 +146,10 @@ void module_led_auto(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
+  digitalWrite(LED_BUILTIN, HIGH);
   normal_loop();
   if(is_sleep_mode)
+    digitalWrite(LED_BUILTIN, HIGH);
     sleep_loop();
 }
 
