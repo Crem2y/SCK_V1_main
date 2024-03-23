@@ -8,7 +8,7 @@
 // limit values
 #define MS_MAX 120 // mouseSpeed max value (~ 127)
 #define MS_MIN 1   // mouseSpeed min value (0 ~)
-#define MS_CNG 1   // mouseSpeed change value (1 ~ MS_MIN)
+#define MS_CNG 0.2   // mouseSpeed change value (1 ~ MS_MIN)
 #define MS_DEF 1   // mouseSpeed default value (MS_MAX ~ MS_MIN)
 
 #define WS_MAX 20  // wheelSpeed max value (~ 127)
@@ -18,12 +18,16 @@
 
 #define RS_MAX 500 // repeatSpeed max value (~ 65535)
 #define RS_MIN 10  // repeatSpeed min value (1 ~)
-#define RS_CNG 1   // repeatSpeed change value (1 ~ RS_MIN)
+#define RS_CNG 0.2   // repeatSpeed change value (1 ~ RS_MIN)
 #define RS_DEF 10  // repeatSpeed default value (RS_MAX ~ RS_MIN)
 
 signed   char  mouseSpeed  = MS_DEF; // mouse move speed  (-128 ~ 127)
 signed   char  wheelSpeed  = WS_DEF; // mouse wheel speed (-128 ~ 127)
 unsigned short repeatSpeed = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
+
+float          mouseSpeed_f  = MS_DEF; // mouse move speed  (-128 ~ 127)
+float          wheelSpeed_f  = WS_DEF; // mouse wheel speed (-128 ~ 127)
+float          repeatSpeed_f = RS_DEF; // delay value in repeat mode (1 ~ 65535ms)
 
 unsigned char SCK_key_layer = 0;
 
@@ -115,10 +119,14 @@ void SCK_code_Normal(byte keycode, bool pressed) {
         Mouse.move(0, 0, -wheelSpeed);
       break;
       case M_F: // mouse_faster
-        if (mouseSpeed < MS_MAX) mouseSpeed += MS_CNG;
+        mouseSpeed_f = mouseSpeed_f + (1 + (mouseSpeed_f * MS_CNG));
+        if (mouseSpeed_f > MS_MAX) mouseSpeed_f = MS_MAX;
+        mouseSpeed = (unsigned short)mouseSpeed_f;
       break;
       case M_S: // mouse_slower
-        if (mouseSpeed > MS_MIN) mouseSpeed -= MS_CNG;
+        mouseSpeed_f = mouseSpeed_f - (1 + (mouseSpeed_f * MS_CNG));
+        if (mouseSpeed_f < MS_MIN) mouseSpeed_f = MS_MIN;
+        mouseSpeed = (unsigned short)mouseSpeed_f;
       break;
       case MH_F: // mouse_wheel_faster
         if (wheelSpeed < WS_MAX) wheelSpeed += WS_CNG;
@@ -127,10 +135,14 @@ void SCK_code_Normal(byte keycode, bool pressed) {
         if (wheelSpeed > WS_MIN) wheelSpeed -= WS_CNG;
       break;
       case R_F: // repeat_faster
-        if (repeatSpeed > RS_MIN) repeatSpeed -= RS_CNG;
+        repeatSpeed_f = repeatSpeed_f - (1 + (repeatSpeed_f * RS_CNG));
+        if (repeatSpeed_f < RS_MIN) repeatSpeed_f = RS_MIN;
+        repeatSpeed = (unsigned short)repeatSpeed_f;
       break;
       case R_S: // repeat_slower
-        if (repeatSpeed < RS_MAX) repeatSpeed += RS_CNG;
+        repeatSpeed_f = repeatSpeed_f + (1 + (repeatSpeed_f * RS_CNG));
+        if (repeatSpeed_f > RS_MAX) repeatSpeed_f = RS_MAX;
+        repeatSpeed = (unsigned short)repeatSpeed_f;
       break;
       case FK_1: // function_key_01
         SCK_key_layer = 1;
