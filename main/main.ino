@@ -48,7 +48,7 @@ bool is_sleep_mode = false;
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x03, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
+struct version_t firm_version = {0x01, 0x04, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
