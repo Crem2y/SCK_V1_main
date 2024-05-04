@@ -171,8 +171,8 @@ void Neo_boot(void) {
     delay(1);
   }
 
-  Neo.key.mode = neo_key_start;
-  Neo.side.mode = neo_side_start;
+  Neo.key.mode = neo_key_temp;
+  Neo.side.mode = neo_side_temp;
 }
 
 /////////////// neopixel (key) ///////////////
