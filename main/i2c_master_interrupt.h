@@ -21,7 +21,7 @@ bool I2C_init(void);
 bool I2C_deinit(void);
 bool I2C_data_clear(void);
 bool I2C_wait(void);
-bool I2C_check(unsigned char address);
+bool I2C_check(unsigned char address, unsigned long timeout);
 bool I2C_read_byte(unsigned char address);
 bool I2C_read_data(unsigned char address, unsigned char length);
 bool I2C_write_byte(unsigned char address);
@@ -75,8 +75,10 @@ ISR(TWI_vect) {
     break;
     case I2C_SC_MT_AL:
       TWCR = 0x85; // clear TWINT
+#if MODULE_CONFIG == MODULE_SUB
+      I2C_deinit();
+#endif
       I2C_is_communicating = false;
-      // Arbitration unused
     break;
     case I2C_SC_MR_SRA:
       if(I2C_bytes_size == 1) { // if next is last byte
@@ -185,6 +187,7 @@ bool I2C_wait(void) {
  * @brief Check the slave of the entered address. Pause until a response is received or a certain number of times are reached.
  * 
  * @param address I2C slave address
+ * @param timeout communication timeout (ms)
  * @return true 
  * @return false 
  */

@@ -9,11 +9,20 @@
 #include "neopixel_handle.h"
 #include "user_datas/user_functions.h"
 
-#define KM_RS 18 // keyboard module reset pin
+#define MODULE_MASTER 0
+#define MODULE_SUB    1
+#define MODULE_CONFIG MODULE_MASTER
 
-#define P_NL 19 // num lock led pin
-#define P_CL 20 // caps lock led pin
-#define P_SL 21 // scroll lock led pin
+#if MODULE_CONFIG == MODULE_MASTER
+  #define KM_RS 18 // keyboard module reset pin
+
+  #define P_NL 19 // num lock led pin
+  #define P_CL 20 // caps lock led pin
+  #define P_SL 21 // scroll lock led pin
+#elif MODULE_CONFIG == MODULE_SUB
+  #define SM_RS 11 // sub module reset pin
+  #define SM_PM 10 // sub module program mode pin
+#endif
 
 String uart_string = "";
 unsigned short sleep_count = 0;
@@ -32,14 +41,18 @@ bool is_sleep_mode = false;
 : __DATE__ [2] == 't' ? 10 \
 : __DATE__ [2] == 'v' ? 11 : 12)
 
+#define VERSION_SUB 0x0A
+
 #define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
 + (__DATE__ [5] - '0'))
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x03, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, 0x0A};
+struct version_t firm_version = {0x01, 0x04, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
+  pinMode(LED_BUILTIN, OUTPUT);
+#if MODULE_CONFIG == MODULE_MASTER
   pinMode(KM_RS, OUTPUT); // keyboard module reset
   digitalWrite(KM_RS, HIGH);
 
@@ -50,9 +63,15 @@ void setup(void) {
   digitalWrite(P_NL, HIGH);
   digitalWrite(P_CL, HIGH);
   digitalWrite(P_SL, HIGH);
+#elif MODULE_CONFIG == MODULE_SUB
+  pinMode(SM_RS, INPUT_PULLUP);
+  pinMode(SM_PM, INPUT_PULLUP);
+#endif
 
   Serial.begin(115200);
 
+  digitalWrite(LED_BUILTIN, HIGH);
+#if MODULE_CONFIG == MODULE_MASTER
   delay(200); // power stabilization time & led check
   digitalWrite(P_NL, LOW);
   delay(200);
@@ -60,11 +79,12 @@ void setup(void) {
   delay(200);
   digitalWrite(P_SL, LOW);
   delay(200);
+#endif
 
   Neo_init();
   Neo_boot();
   
-  Serial.println(F("[sys] --SCK V1--"));
+  Serial.println(F("[sys] - Super Custom Keyboard -"));
   Serial.print(F("[sys] firmware ver. "));
   firm_ver = &firm_version;
   print_firm_ver();
@@ -75,10 +95,12 @@ void setup(void) {
 
   SCK_init();
 
+#if MODULE_CONFIG == MODULE_MASTER
   if(SCK_KM_count == 0) {
     delay(3000);
     debug_reset();
   }
+#endif
 
   led_func_set();
   user_func_set();
@@ -124,8 +146,10 @@ void module_led_auto(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
+  digitalWrite(LED_BUILTIN, HIGH);
   normal_loop();
   if(is_sleep_mode)
+    digitalWrite(LED_BUILTIN, HIGH);
     sleep_loop();
 }
 
@@ -141,10 +165,19 @@ void normal_loop(void) {
     }
     SCK_loop();
 
+#if MODULE_CONFIG == MODULE_MASTER
     // lock led
     digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
     digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
     digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
+#elif MODULE_CONFIG == MODULE_SUB
+    if(!digitalRead(SM_RS)) {
+      debug_reset();
+    }
+    if(!digitalRead(SM_PM)) {
+      debug_program_mode();
+    }
+#endif
 
     TIM_DISABLE;
     Neo_loop();
@@ -280,6 +313,8 @@ void debug_program_mode(void) {
 
   byte i, j;
   while(true) {
+
+#if MODULE_CONFIG == MODULE_MASTER
     SCK_loop();
     if(SCK_KM_pressed[0][0]) { // if ESC key is pressing
       debug_reset();
@@ -309,6 +344,29 @@ void debug_program_mode(void) {
         delay(i);
       }
     }
+#elif MODULE_CONFIG == MODULE_SUB
+    if(!digitalRead(SM_RS)) {
+      debug_reset();
+    }
+
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(LED_BUILTIN, 1);
+        delay(i);
+        digitalWrite(LED_BUILTIN, 0);
+        delay(10-i);
+      }
+    }
+    for(i=0; i<10; i++) {
+      for(j=0; j<5; j++) {
+        digitalWrite(LED_BUILTIN, 1);
+        delay(10-i);
+        digitalWrite(LED_BUILTIN, 0);
+        delay(i);
+      }
+    }
+#endif
+
   }
 }
 
