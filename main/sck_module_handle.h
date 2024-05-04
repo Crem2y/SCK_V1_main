@@ -226,7 +226,7 @@ void SCK_loop(void) {
   SCK_lock_key = BootKeyboard.getLeds(); // lock key checking
 
   // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
-    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  //I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
   //I2C_write_byte(I2C_GCA);
 }
 
