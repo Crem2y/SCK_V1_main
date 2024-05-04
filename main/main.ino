@@ -42,14 +42,14 @@ bool is_sleep_mode = false;
 : __DATE__ [2] == 't' ? 10 \
 : __DATE__ [2] == 'v' ? 11 : 12)
 
-#define VERSION_SUB 0x0B
+#define VERSION_SUB 0x0A
 
 #define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
 + (__DATE__ [5] - '0'))
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x04, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
+struct version_t firm_version = {0x01, 0x05, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
