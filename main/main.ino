@@ -150,7 +150,7 @@ void loop(void) {
   digitalWrite(LED_BUILTIN, HIGH);
 
   serial_loop();
-  module_loop();
+  main_loop();
   sleep_check_loop();
   module_led_control_loop();
 
@@ -171,7 +171,7 @@ inline void serial_loop(void) {
   }
 }
 
-void module_loop(void) {
+void main_loop(void) {
   SCK_loop();
 
 #if MODULE_CONFIG == MODULE_MASTER
