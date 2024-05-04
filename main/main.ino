@@ -11,7 +11,7 @@
 
 #define MODULE_MASTER 0
 #define MODULE_SUB    1
-#define MODULE_CONFIG MODULE_MASTER
+#define MODULE_CONFIG MODULE_SUB
 
 #if MODULE_CONFIG == MODULE_MASTER
   #define KM_RS 18 // keyboard module reset pin
@@ -42,7 +42,7 @@ bool is_sleep_mode = false;
 : __DATE__ [2] == 't' ? 10 \
 : __DATE__ [2] == 'v' ? 11 : 12)
 
-#define VERSION_SUB 0x0A
+#define VERSION_SUB 0x0B
 
 #define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
 + (__DATE__ [5] - '0'))
@@ -147,13 +147,18 @@ void module_led_auto(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
-  digitalWrite(LED_BUILTIN, HIGH);
+  if (I2C_is_initalized) {
+    digitalWrite(LED_BUILTIN, HIGH);
+  }
+  else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
 
   serial_loop();
   main_loop();
   sleep_check_loop();
   module_led_control_loop();
-
+  
   wdt_reset();
   delay(1);
 }
