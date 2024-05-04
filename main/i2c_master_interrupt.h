@@ -19,6 +19,7 @@ volatile unsigned char I2C_err_count = 0;          // I2C error count
 
 bool I2C_init(void);
 bool I2C_deinit(void);
+bool I2C_force_deinit(void);
 bool I2C_data_clear(void);
 bool I2C_wait(void);
 bool I2C_check(unsigned char address, unsigned long timeout);
@@ -76,8 +77,9 @@ ISR(TWI_vect) {
     case I2C_SC_MT_AL:
       TWCR = 0x85; // clear TWINT
 #if MODULE_CONFIG == MODULE_SUB
-      I2C_deinit();
+      I2C_force_deinit();
 #endif
+      I2C_err_count++;
       I2C_is_communicating = false;
     break;
     case I2C_SC_MR_SRA:
@@ -153,6 +155,22 @@ bool I2C_init(void) {
  */
 bool I2C_deinit(void) {
   if (!I2C_is_initalized || I2C_is_communicating) return false;
+
+  TWCR = 0x00;
+  TWBR = 0x00;
+  TWSR = 0x00;
+  
+  I2C_is_initalized = false;
+  return true;
+}
+
+/**
+ * @brief force deinitalize I2C port
+ * 
+ * @return true 
+ * @return false 
+ */
+bool I2C_force_deinit(void) {
 
   TWCR = 0x00;
   TWBR = 0x00;
