@@ -11,7 +11,7 @@
 
 #define MODULE_MASTER 0
 #define MODULE_SUB    1
-#define MODULE_CONFIG MODULE_MASTER
+#define MODULE_CONFIG MODULE_SUB
 
 #if MODULE_CONFIG == MODULE_MASTER
   #define KM_RS 18 // keyboard module reset pin
@@ -26,6 +26,7 @@
 
 String uart_string = "";
 unsigned short sleep_count = 0;
+bool sleep_mode_prev = false;
 bool is_sleep_mode = false;
 
 #define YEAR ((__DATE__ [9] - '0') * 10 + (__DATE__ [10] - '0'))
@@ -48,7 +49,7 @@ bool is_sleep_mode = false;
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x04, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
+struct version_t firm_version = {0x01, 0x05, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -146,100 +147,58 @@ void module_led_auto(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
-  digitalWrite(LED_BUILTIN, HIGH);
-  normal_loop();
-  if(is_sleep_mode)
+  if (I2C_is_initalized) {
     digitalWrite(LED_BUILTIN, HIGH);
-    sleep_loop();
+  }
+  else {
+    digitalWrite(LED_BUILTIN, LOW);
+  }
+
+  serial_loop();
+  main_loop();
+  sleep_check_loop();
+  module_led_control_loop();
+  
+  wdt_reset();
+  delay(1);
 }
 
-void normal_loop(void) {
-  while(true) {
-    while(Serial.available()) {
-      wdt_disable();
-      TIM_DISABLE;
-      uart_string = Serial.readStringUntil('\n');
-      check_command(uart_string);
-      TIM_ENABLE;
-      wdt_enable(WDTO_120MS);
-    }
-    SCK_loop();
+inline void serial_loop(void) {
+  while(Serial.available()) {
+    wdt_disable();
+    TIM_DISABLE;
+
+    uart_string = Serial.readStringUntil('\n');
+    check_command(uart_string);
+
+    TIM_ENABLE;
+    wdt_enable(WDTO_120MS);
+  }
+}
+
+void main_loop(void) {
+  SCK_loop();
 
 #if MODULE_CONFIG == MODULE_MASTER
-    // lock led
-    digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
-    digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
-    digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
+  // lock led
+  digitalWrite(P_NL, !(SCK_lock_key & LED_NUM_LOCK));
+  digitalWrite(P_CL, !(SCK_lock_key & LED_CAPS_LOCK));
+  digitalWrite(P_SL, !(SCK_lock_key & LED_SCROLL_LOCK));
 #elif MODULE_CONFIG == MODULE_SUB
-    if(!digitalRead(SM_RS)) {
-      debug_reset();
-    }
-    if(!digitalRead(SM_PM)) {
-      debug_program_mode();
-    }
+  if(!digitalRead(SM_RS)) {
+    debug_reset();
+  }
+  if(!digitalRead(SM_PM)) {
+    debug_program_mode();
+  }
 #endif
 
-    TIM_DISABLE;
-    Neo_loop();
-    TIM_ENABLE;
-
-    if(Neo.module == NEO_MODULE_OFF) SCK_led_power == false;
-    else SCK_led_power == true;
-
-    // send data to module
-    // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
-    I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
-    // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
-    module_led_auto();
-    I2C_write_data(I2C_GCA, 1+18);
-
-    // if all leds are off, check time for sleep mode
-    if(!(SCK_lock_key & 0x07)) {
-      byte i, j;
-      byte k = 0;
-
-      for(i=0; i<KM_V; i++) {
-        for(j=0; j<KM_H; j++) {
-          if(SCK_KM_pressed[i][j]) {
-            k++;
-            break;
-          }
-        }
-      }
-      if(k == 0) {
-        sleep_count++;
-        if(sleep_count > 6000) { // 200 = 1s
-          sleep_count = 0;
-          is_sleep_mode = true;
-          return;
-        }
-      } else {
-        sleep_count = 0;
-      }
-    }
-    wdt_reset();
-    delay(1);
-  }
-  return;
 }
 
-void sleep_loop(void) {
-  TIM_DISABLE;
-  Neo.key.mode  = NEO_MODE_NONE;
-  Neo.side.mode = NEO_MODE_NONE;
-  SCK_led_power = false;
-  Neo_loop();
-  SCK_loop();
-  I2C_writing_data[1] = 0x00;
-  I2C_write_data(I2C_GCA, 2);
-
-  while(is_sleep_mode) {
-    SCK_loop();
-
-    if(SCK_lock_key & 0x07) {
-      break;
-    }
-    
+void sleep_check_loop(void) {
+  sleep_mode_prev = is_sleep_mode;
+  // if all lock leds are off, check time for sleep mode
+  if(!(SCK_lock_key & 0x07)) {
     byte i, j;
     byte k = 0;
 
@@ -251,39 +210,58 @@ void sleep_loop(void) {
         }
       }
     }
-    for(i=0; i<FM_V; i++) {
-      for(j=0; j<FM_H; j++) {
-        if(SCK_FM_pressed[i][j]) {
-          k++;
-          break;
-        }
+    if(k == 0) {
+      if(sleep_count > 6000) { // 200 = 1s, 6000 = 30s
+        is_sleep_mode = true;
+      } else {
+        sleep_count++;
       }
+    } else {
+      sleep_count = 0;
+      is_sleep_mode = false;
     }
-    for(i=0; i<PM_V; i++) {
-      for(j=0; j<PM_H; j++) {
-        if(SCK_PM_pressed[i][j]) {
-          k++;
-          break;
-        }
-      }
-    }
-    for(i=0; i<MM_V; i++) {
-      for(j=0; j<MM_H; j++) {
-        if(SCK_MM_pressed[i][j]) {
-          k++;
-          break;
-        }
-      }
-    }
-    if(k) {
-      break;
-    }
-    wdt_reset();
-    delay(10);
+  } else {
+    sleep_count = 0;
+    is_sleep_mode = false;
   }
-  SCK_loop();
-  Keyboard.releaseAll();
-  debug_reset();
+}
+
+void module_led_control_loop(void) {
+
+  if(!is_sleep_mode)
+  {
+    if(is_sleep_mode != sleep_mode_prev)
+    {
+      Neo.key.mode = neo_key_temp;
+      Neo.side.mode = neo_side_temp;
+    }
+  } else {
+    if(is_sleep_mode != sleep_mode_prev)
+    {
+      neo_key_temp = Neo.key.mode;
+      Neo.key.mode = NEO_MODE_NONE;
+      neo_side_temp = Neo.side.mode;
+      Neo.side.mode = NEO_MODE_NONE;
+    }
+  }
+
+  TIM_DISABLE;
+  Neo_loop();
+  TIM_ENABLE;
+
+  if(Neo.module == NEO_MODULE_OFF) 
+  {
+    SCK_led_power = false;
+  } else {
+    SCK_led_power = true;
+  }
+
+  // send data to module
+  // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
+  I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
+  module_led_auto();
+  I2C_write_data(I2C_GCA, 1+18);
 }
 
 //////////////////////////////// debug functions ////////////////////////////////
@@ -371,13 +349,13 @@ void debug_program_mode(void) {
 }
 
 void debug_led_on(void) {
-  Neo.key.mode = neo_key_start;
-  Neo.side.mode = neo_side_start;
-  SCK_led_power = true;
+  Neo.key.mode = neo_key_temp;
+  Neo.side.mode = neo_side_temp;
 }
 
 void debug_led_off(void) {
+  neo_key_temp = Neo.key.mode;
   Neo.key.mode = NEO_MODE_NONE;
+  neo_side_temp = Neo.side.mode;
   Neo.side.mode = NEO_MODE_NONE;
-  SCK_led_power = false;
 }

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "sck_key_define.h"
+
 #define NEO_PIN  9  // neopixel data pin
 #define NEO_KEY  74 // number of neopixels (key)
 #define NEO_SIDE 16 // number of neopixels (side)
