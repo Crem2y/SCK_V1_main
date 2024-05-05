@@ -22,7 +22,7 @@ bool I2C_deinit(void);
 bool I2C_force_deinit(void);
 bool I2C_data_clear(void);
 bool I2C_wait(void);
-bool I2C_check(unsigned char address, unsigned long timeout);
+bool I2C_check(unsigned char address);
 bool I2C_read_byte(unsigned char address);
 bool I2C_read_data(unsigned char address, unsigned char length);
 bool I2C_write_byte(unsigned char address);
