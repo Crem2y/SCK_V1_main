@@ -147,10 +147,9 @@ void module_led_auto(void) {
 
 //////////////////////////////// main loop //////////////////////////////// 
 void loop(void) {
-  if (I2C_is_initalized) {
+  if (I2C_is_initalized && !is_sleep_mode) {
     digitalWrite(LED_BUILTIN, HIGH);
-  }
-  else {
+  } else {
     digitalWrite(LED_BUILTIN, LOW);
   }
 
