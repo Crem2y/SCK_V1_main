@@ -166,7 +166,7 @@ void SCK_loop(void) {
     
   }
 
-  if(SCK_FM_count) { // if there is fnkey modules
+  if(true) { //if(SCK_FM_count) { // if there is fnkey modules
     I2C_read_data(SCK_FM_address, FM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
@@ -181,7 +181,7 @@ void SCK_loop(void) {
     }
   }
   
-  if(SCK_PM_count) { // if there is keypad modules
+  if(true) { //if(SCK_PM_count) { // if there is keypad modules
     I2C_read_data(SCK_PM_address, PM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
@@ -196,7 +196,7 @@ void SCK_loop(void) {
     }
   }
 
-  if(SCK_MM_count) { // if there is macro modules
+  if(true) { //if(SCK_MM_count) { // if there is macro modules
     for(i=0; i<MM_H; i++) {
       if(!I2C_check(SCK_MM_addresses[i])) continue;
 

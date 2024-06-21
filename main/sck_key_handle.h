@@ -298,10 +298,10 @@ void SCK_code_Surface(byte keycode, bool pressed) {
         SurfaceDial.press();
       break;
       case S_CW: // surface_clockwise
-        SurfaceDial.rotate(10);
+        SurfaceDial.rotate(45);
       break;
       case S_CC: // surface_counter_clockwise
-        SurfaceDial.rotate(-10);
+        SurfaceDial.rotate(-45);
       break;
     }
   } else {
