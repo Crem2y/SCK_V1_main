@@ -11,7 +11,7 @@
 
 #define MODULE_MASTER 0
 #define MODULE_SUB    1
-#define MODULE_CONFIG MODULE_SUB
+#define MODULE_CONFIG MODULE_MASTER
 
 #if MODULE_CONFIG == MODULE_MASTER
   #define KM_RS 18 // keyboard module reset pin
