@@ -1,3 +1,4 @@
+#line 1 "C:\\Coding\\SCK_V1_main\\main\\i2c_master_interrupt.h"
 #pragma once
 
 #include "i2c_status_code.h"
@@ -23,6 +24,7 @@ bool I2C_force_deinit(void);
 bool I2C_data_clear(void);
 bool I2C_wait(void);
 bool I2C_check(unsigned char address);
+bool I2C_check_timeout(unsigned char address, unsigned short timeout);
 bool I2C_read_byte(unsigned char address);
 bool I2C_read_data(unsigned char address, unsigned char length);
 bool I2C_write_byte(unsigned char address);
@@ -202,10 +204,9 @@ bool I2C_wait(void) {
 }
 
 /**
- * @brief Check the slave of the entered address. Pause until a response is received or a certain number of times are reached.
+ * @brief Check the slave of the entered address. Pause until a response is received.
  * 
  * @param address I2C slave address
- * @param timeout communication timeout (ms)
  * @return true 
  * @return false 
  */
@@ -213,8 +214,39 @@ bool I2C_check(unsigned char address) {
   I2C_reading_data[0] = 0x00;
   if(!I2C_read_byte(address)) return false;
   //Serial.println(" checking...");
-  while(I2C_is_communicating);
+  I2C_wait();
 
+  if(I2C_err_count == 0) return true;
+
+  return false;
+}
+
+/**
+ * @brief Check the slave of the entered address. Pause until a response is received or a certain number of times are reached.
+ * 
+ * @param address I2C slave address
+ * @param timeout communication timeout (ms)
+ * @return true 
+ * @return false 
+ */
+bool I2C_check_timeout(unsigned char address, unsigned short timeout) {
+  I2C_reading_data[0] = 0x00;
+  if(!I2C_read_byte(address)) {
+    return false;
+  }
+
+  bool timeouted = true;
+
+  for(unsigned short i=0; i<timeout; i++) {
+    if(!I2C_is_communicating) {
+      timeouted = false;
+      break;
+    }
+    delay(1);
+  }
+  I2C_is_communicating = false; // stop the communication
+
+  if(timeouted) return false;
   if(I2C_err_count == 0) return true;
 
   return false;
@@ -228,14 +260,7 @@ bool I2C_check(unsigned char address) {
  * @return false 
  */
 bool I2C_read_byte(unsigned char address) {
-  if (!I2C_is_initalized) {
-    Serial.println("[I2C] I2C_read_byte : not initalized!");
-    return false;
-  }
-  if (I2C_is_communicating) {
-    Serial.println("[I2C] I2C_read_byte : still communicating!");
-    return false;
-  }
+  if (!I2C_is_initalized || I2C_is_communicating) return false;
 
   I2C_target_address = address;
   I2C_mode = 1;
