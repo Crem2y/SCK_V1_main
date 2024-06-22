@@ -95,14 +95,14 @@ void setup(void) {
   SurfaceDial.begin();
 
   SCK_init();
-
+/*
 #if MODULE_CONFIG == MODULE_MASTER
   if(SCK_KM_count == 0) {
     delay(3000);
     debug_reset();
   }
 #endif
-
+*/
   led_func_set();
   user_func_set();
   debug_func_set();
@@ -260,7 +260,7 @@ void module_led_control_loop(void) {
   I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
   // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
   module_led_auto();
-  I2C_write_data(I2C_GCA, 1+18);
+  //I2C_write_data(I2C_GCA, 1+18);
 }
 
 //////////////////////////////// debug functions ////////////////////////////////
