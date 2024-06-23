@@ -74,6 +74,7 @@ ISR(TIMER3_COMPA_vect) {
  */
 void SCK_init(void) {
   byte i;
+  byte temp;
 
   // module check
   if(!I2C_init()) {
@@ -85,12 +86,12 @@ void SCK_init(void) {
 
   Serial.println(F("[SCK] i2c slave scanning..."));
   for(i=0x10; i<0x30; i++) {
-    if(I2C_check(i)) {
+    if(I2C_check(i, temp, 10)) {
       Serial.print("[SCK] 0x");
       Serial.print(i, HEX);
       Serial.print(F(" ACK! data : 0x"));
-      if(I2C_reading_data[0] < 0x10) Serial.print('0');
-      Serial.println(I2C_reading_data[0], HEX);
+      if(temp < 0x10) Serial.print('0');
+      Serial.println(temp, HEX);
 
       if(i > 0x0F && i < 0x18) {
         SCK_KM_address = i;
@@ -151,13 +152,13 @@ void SCK_loop(void) {
 
   // getting key
   if(SCK_KM_count) { // if there is keyboard modules
-    I2C_read_data(SCK_KM_address, KM_H);
+    I2C_read_data(SCK_KM_address, SCK_KM_buf, KM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
       for(i=0; i<KM_H; i++) {
         key_mask = 0x20;
         for(j=0; j<KM_V; j++) {
-          key_state = I2C_reading_data[i] & key_mask;
+          key_state = SCK_KM_buf[i] & key_mask;
           keyCheck_KM(key_state, j, i, SCK_key_layer);
           key_mask >>= 1;
         }
@@ -167,13 +168,13 @@ void SCK_loop(void) {
   }
 
   if(true) { //if(SCK_FM_count) { // if there is fnkey modules
-    I2C_read_data(SCK_FM_address, FM_H);
+    I2C_read_data(SCK_FM_address, SCK_FM_buf, FM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
       for(i=0; i<FM_H; i++) {
         key_mask = 0x10;
         for(j=0; j<FM_V; j++) {
-          key_state = I2C_reading_data[i] & key_mask;
+          key_state = SCK_FM_buf[i] & key_mask;
           keyCheck_FM(key_state, j, i, SCK_key_layer);
           key_mask >>= 1;
         }
@@ -182,13 +183,13 @@ void SCK_loop(void) {
   }
   
   if(true) { //if(SCK_PM_count) { // if there is keypad modules
-    I2C_read_data(SCK_PM_address, PM_H);
+    I2C_read_data(SCK_PM_address, SCK_PM_buf, PM_H);
     while(I2C_is_communicating);
     if(!I2C_err_count) {
       for(i=0; i<PM_H; i++) {
         key_mask = 0x10;
         for(j=0; j<PM_V; j++) {
-          key_state = I2C_reading_data[i] & key_mask;
+          key_state = SCK_PM_buf[i] & key_mask;
           keyCheck_PM(key_state, j, i, SCK_key_layer);
           key_mask >>= 1;
         }
@@ -198,12 +199,14 @@ void SCK_loop(void) {
 
   if(true) { //if(SCK_MM_count) { // if there is macro modules
     for(i=0; i<MM_H; i++) {
-      if(!I2C_check(SCK_MM_addresses[i])) continue;
+      I2C_read_byte(SCK_MM_addresses[i], SCK_MM_buf);
+      while(I2C_is_communicating);
+      if(I2C_err_count) continue;
 
       key_mask = 0x80;
       unsigned short mode_data = (SCK_MM_keyset[SCK_key_layer][0][i] << 8) + SCK_MM_keyset[SCK_key_layer][1][i];
       for(j=0; j<MM_V; j++) {
-        key_state = I2C_reading_data[0] & key_mask;
+        key_state = SCK_MM_buf[0] & key_mask;
         if (mode_data & (0x4000 >> (j*2))) { // if repeat mode
           if (mode_data & (0x8000 >> (j*2))) { // if toggle mode
             toggleRepeat_MM(key_state, j, i, SCK_key_layer);
