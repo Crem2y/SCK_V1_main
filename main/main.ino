@@ -31,25 +31,26 @@ bool is_sleep_mode = false;
 
 #define YEAR ((__DATE__ [9] - '0') * 10 + (__DATE__ [10] - '0'))
 
-#define MONTH (__DATE__ [2] == 'n' ? 1 \
+#define MONTH (__DATE__ [2] == 'n' ? (__DATE__ [1] == 'a' ? 1 : 6) \
 : __DATE__ [2] == 'b' ? 2 \
 : __DATE__ [2] == 'r' ? (__DATE__ [0] == 'M' ? 3 : 4) \
 : __DATE__ [2] == 'y' ? 5 \
-: __DATE__ [2] == 'n' ? 6 \
 : __DATE__ [2] == 'l' ? 7 \
 : __DATE__ [2] == 'g' ? 8 \
 : __DATE__ [2] == 'p' ? 9 \
 : __DATE__ [2] == 't' ? 10 \
 : __DATE__ [2] == 'v' ? 11 : 12)
 
-#define VERSION_SUB 0x0A
-
 #define DAY ((__DATE__ [4] == ' ' ? 0 : __DATE__ [4] - '0') * 10 \
 + (__DATE__ [5] - '0'))
 
 #define INT2BCD(x) (((x / 10) << 4) | ((x % 10)))
 
-struct version_t firm_version = {0x01, 0x05, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
+#define VERSION_SUB 0x0A
+
+unsigned char led_buf[19] = {0,};
+
+struct version_t firm_version = {0x01, 0x06, {INT2BCD(YEAR), INT2BCD(MONTH), INT2BCD(DAY)}, VERSION_SUB};
 
 void setup(void) {
   pinMode(LED_BUILTIN, OUTPUT);
@@ -107,6 +108,11 @@ void setup(void) {
   user_func_set();
   debug_func_set();
 
+  Neo.key.mode = EEPROM.read(1);
+  Neo.key.bright = EEPROM.read(2);
+  Neo.side.mode = EEPROM.read(3);
+  Neo.side.bright = EEPROM.read(4);
+
   wdt_enable(WDTO_120MS);
   wdt_reset();
 }
@@ -122,9 +128,9 @@ void module_led_fixed(void) {
   };
 
   for(byte i=0; i<6; i++) {
-    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
-    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
-    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+    led_buf[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    led_buf[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    led_buf[i*3 +3]  = (col_temp[i] & 0x000000FF);
   }
 }
 
@@ -139,9 +145,9 @@ void module_led_auto(void) {
   col_temp[5] = neopixel.getPixelColor(73);
 
   for(byte i=0; i<6; i++) {
-    I2C_writing_data[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
-    I2C_writing_data[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
-    I2C_writing_data[i*3 +3]  = (col_temp[i] & 0x000000FF);
+    led_buf[i*3 +1]  = (col_temp[i] & 0x00FF0000) >> 16;
+    led_buf[i*3 +2]  = (col_temp[i] & 0x0000FF00) >> 8;
+    led_buf[i*3 +3]  = (col_temp[i] & 0x000000FF);
   }
 }
 
@@ -257,10 +263,10 @@ void module_led_control_loop(void) {
 
   // send data to module
   // general call data (power, ---, ---, ---, ---, scroll_lock, caps_lock, num_lock)
-  I2C_writing_data[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
+  led_buf[0] = (SCK_led_power << 7) | (SCK_lock_key & 0x07);
   // led color data (0xRR 0xGG 0xBB 0xRR 0xGG 0xBB ...)
   module_led_auto();
-  I2C_write_data(I2C_GCA, 1+18);
+  I2C_write_data(I2C_GCA, led_buf, 1+18);
 }
 
 //////////////////////////////// debug functions ////////////////////////////////
@@ -284,8 +290,8 @@ void debug_reset(void) {
 void debug_program_mode(void) {
   cli();
   wdt_disable();
-  I2C_writing_data[0] = 0x00;
-  I2C_write_byte(I2C_GCA);
+  led_buf[0] = 0x00;
+  I2C_write_byte(I2C_GCA, led_buf);
   Neo_all_off();
 
   byte i, j;
