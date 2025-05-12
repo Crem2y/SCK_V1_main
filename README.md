@@ -8,6 +8,13 @@ Handles USB HID communication and I2C messaging with attached key modules.
 
 ---
 
+## How to upload firmware
+1. Press `D_PG` key (Default : FN1 + `\``)
+2. The LED will blink slowly.
+3. At this point, you can build and upload. 
+
+---
+
 ## 🔧 Development Environment
 
 - **IDE**: Arduino IDE  
