@@ -1,4 +1,4 @@
-# SCK_V1_main
+# SCK_main
 
 ## 📌 Description
 Firmware for the **main controller** of a modular super-custom keyboard.  
